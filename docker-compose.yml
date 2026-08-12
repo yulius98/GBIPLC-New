@@ -56,6 +56,13 @@ services:
     ports:
       - "80:80"
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    command: tunnel run --token $$CLOUDFLARE_TUNNEL_TOKEN
+
 volumes:
   db_data:
   uploads_data:
