@@ -1,0 +1,301 @@
+// Prisma schema untuk GBI PLC Backend (PostgreSQL)
+// Refactor dari schema database MySQL/Laravel
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  jemaat
+  pengurus
+  pendeta
+}
+
+enum YouthGalleryType {
+  image
+  video
+}
+
+enum YouthScheduleType {
+  weekly
+  special_event
+}
+
+model User {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  email              String?        @unique
+  email_verified_at  DateTime?
+  password           String?
+  alamat             String?
+  tgl_lahir          DateTime?
+  no_HP              String?
+  gol_darah          String?
+  instagram          String?
+  facebook           String?
+  filename           String?
+  path               String?
+  role               UserRole       @default(jemaat)
+  reading_start_date DateTime?
+  remember_token     String?
+  deleted_at         DateTime?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+  kunjungans         TblKunjungan[]
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  email      String   @id
+  token      String
+  created_at DateTime? @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model TblKunjungan {
+  id            Int       @id @default(autoincrement())
+  id_jemaat     Int
+  tglkunjungan  DateTime
+  nama_timbesuk String
+  filename      String?
+  path          String?
+  keterangan    String?
+  deleted_at    DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  jemaat        User      @relation(fields: [id_jemaat], references: [id], onDelete: Cascade)
+
+  @@index([id_jemaat])
+  @@map("tbl_kunjungans")
+}
+
+model TblCarousel {
+  id          Int       @id @default(autoincrement())
+  tema        String?
+  description String?
+  filename    String?
+  path        String?
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("tbl_carousels")
+}
+
+model TblTokoJemaat {
+  id           Int       @id @default(autoincrement())
+  nama         String
+  nama_usaha   String
+  jenis_usaha  String
+  alamat_usaha String
+  no_telp      Int?
+  keterangan   String?
+  deleted_at   DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  @@map("tbl_toko_jemaats")
+}
+
+model TblPastorNote {
+  id         Int       @id @default(autoincrement())
+  tgl_note   DateTime
+  note       String
+  filename   String?
+  path       String?
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("tbl_pastor_notes")
+}
+
+model TblEvent {
+  id          Int       @id @default(autoincrement())
+  tgl_event   DateTime
+  keterangan  String?
+  filename    String?
+  path        String?
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("tbl_events")
+}
+
+model TblPopupAd {
+  id         Int       @id @default(autoincrement())
+  filename   String?
+  path       String?
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("tbl_popup_ads")
+}
+
+model TblMateriKotbah {
+  id         Int       @id @default(autoincrement())
+  tgl_kotbah DateTime
+  judul      String?
+  filename   String?
+  path       String?
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("tbl_materi_kotbahs")
+}
+
+model TblIbadahRaya {
+  id          Int       @id @default(autoincrement())
+  tgl_ibadah  DateTime
+  ibadah_ke   String?
+  link_ibadah String?
+  deleted_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("tbl_ibadah_rayas")
+}
+
+model TblKomsel {
+  id            Int       @id @default(autoincrement())
+  nama_komsel   String
+  ketua_komsel  String
+  no_telp       String?
+  alamat        String?
+  deleted_at    DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@map("tbl_komsels")
+}
+
+model TblMateriKomsel {
+  id         Int       @id @default(autoincrement())
+  tgl_komsel DateTime
+  judul      String?
+  filename   String?
+  path       String?
+  deleted_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("tbl_materi_komsels")
+}
+
+model ReadingSchedule {
+  id              Int      @id @default(autoincrement())
+  day             Int
+  morning_passage String
+  evening_passage String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@unique([day])
+  @@map("reading_schedules")
+}
+
+model TblYouthProgram {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  icon        String?
+  frequency   String
+  category    String?
+  is_active   Boolean   @default(true)
+  order       Int       @default(0)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@map("tbl_youth_programs")
+}
+
+model TblYouthGallery {
+  id              Int              @id @default(autoincrement())
+  title           String
+  description     String?
+  type            YouthGalleryType @default(image)
+  file_path       String
+  thumbnail_path  String?
+  category        String?
+  event_date      DateTime?
+  is_featured     Boolean          @default(false)
+  order           Int              @default(0)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  @@map("tbl_youth_galleries")
+}
+
+model TblYouthSchedule {
+  id           Int              @id @default(autoincrement())
+  title        String
+  description  String
+  type         YouthScheduleType @default(weekly)
+  day_of_week  String?
+  event_date   DateTime?
+  start_time   String?
+  end_time     String?
+  location     String
+  location_url String?
+  category     String?
+  is_active    Boolean          @default(true)
+  order        Int              @default(0)
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+
+  @@map("tbl_youth_schedules")
+}
+
+model TblSeoSetting {
+  id                    Int       @id @default(autoincrement())
+  site_name             String?
+  site_name_short       String?
+  site_url              String?
+  locale                String?
+  default_title         String?
+  default_description   String?
+  keywords              String?
+  og_image              String?
+  church_name           String?
+  church_alternate_name String?
+  church_description    String?
+  telephone             String?
+  whatsapp              String?
+  street_address        String?
+  address_locality      String?
+  address_region        String?
+  postal_code           String?
+  address_country       String?
+  service_name          String?
+  day_of_week           String?
+  opens                 String?
+  closes                String?
+  instagram             String?
+  facebook              String?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  @@map("tbl_seo_settings")
+}
+
+model Notofication {
+  id         Int       @id @default(autoincrement())
+  start_date DateTime
+  end_date   DateTime
+  jam_kirim  DateTime?
+  pesan      String
+  frekuensi  Int?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("notofications")
+}

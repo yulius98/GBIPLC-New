@@ -1,0 +1,45 @@
+{
+  "name": "gbi-plc-backend",
+  "version": "1.0.0",
+  "description": "Backend API GBI PLC (Express.js + PostgreSQL/Prisma) - refactor dari Laravel",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "node --test",
+    "lint": "eslint .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset --force",
+    "db:studio": "prisma studio",
+    "db:import": "node prisma/import-mysql-dump.js",
+    "db:import:apply": "node prisma/import-mysql-dump.js --apply"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1",
+    "node-cache": "^5.1.2",
+    "nodemailer": "^9.0.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "eslint": "^9.25.0",
+    "globals": "^15.15.0",
+    "prisma": "^7.9.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
