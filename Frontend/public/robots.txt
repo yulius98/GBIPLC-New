@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /login
 
-Sitemap: https://philadelphialifecenter.com/sitemap.xml
+Sitemap: https://philadelphialifecenter.devprox.my.id/sitemap.xml
