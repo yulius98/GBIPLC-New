@@ -4,8 +4,9 @@
 const seo = {
   siteName: 'GBI Philadelphia Life Center',
   siteNameShort: 'GBI PLC',
-  // Ganti dengan domain produksi asli bila sudah aktif.
-  siteUrl: 'https://philadelphialifecenter.com',
+  // Sementara pakai devprox.my.id selama philadelphialifecenter.com belum aktif.
+  // Ganti balik ke domain asli + setup redirect saat sudah live lagi.
+  siteUrl: 'https://philadelphialifecenter.devprox.my.id',
   locale: 'id_ID',
   defaultTitle: 'GBI Philadelphia Life Center — Gereja di Yogyakarta',
   defaultDescription:
