@@ -3,14 +3,21 @@ services:
     image: postgres:16-alpine
     container_name: gbiplc-db
     restart: unless-stopped
+
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-gbiplc}
+
     volumes:
       - db_data:/var/lib/postgresql/data
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-gbiplc}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-gbiplc}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -18,51 +25,61 @@ services:
   backend:
     build:
       context: ./Backend
+      dockerfile: Dockerfile
+
     container_name: gbiplc-backend
     restart: unless-stopped
+
+    env_file:
+      - ./Backend/.env
+
     environment:
       NODE_ENV: production
       PORT: 8000
-      APP_URL: http://localhost
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-gbiplc}?schema=public
-      JWT_SECRET: ${JWT_SECRET:-please_change_this_to_a_long_random_secret}
-      JWT_TTL: ${JWT_TTL:-60}
-      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-20160}
-      JWT_ALGO: HS256
-      MAIL_ENABLED: ${MAIL_ENABLED:-false}
-      MAIL_HOST: ${MAIL_HOST:-}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@philadelphialifecenter.com}
-      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-GBI Philadelpia Life Center}
-      BIBLE_CACHE_TTL_DAYS: ${BIBLE_CACHE_TTL_DAYS:-7}
+
     volumes:
       - uploads_data:/app/public/uploads
+
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && node src/index.js"
+
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             node src/index.js"
+
     ports:
-      - "8000:8000"
+      - "8001:8000"
 
   frontend:
     build:
       context: ./Frontend
+      dockerfile: Dockerfile
+
     container_name: gbiplc-frontend
     restart: unless-stopped
+
     depends_on:
       - backend
+
     ports:
       - "80:80"
 
   cloudflared:
     image: cloudflare/cloudflared:latest
+    container_name: gbiplc-cloudflared
     restart: unless-stopped
     env_file:
       - ./Backend/.env
-    command: tunnel run --token $$CLOUDFLARE_TUNNEL_TOKEN
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   db_data:
   uploads_data:
+
