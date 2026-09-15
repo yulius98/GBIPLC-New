@@ -113,11 +113,24 @@ export default function PublicLayout() {
               </div>
             </div>
             <div>
-              <p className="footer__title">Ibadah</p>
+              <p className="footer__title">Jadwal Ibadah</p>
               <div className="footer__links">
-                <NavLink to="/ibadah-raya">Ibadah Raya Minggu</NavLink>
-                <NavLink to="/youth">Youth Ministry</NavLink>
-                <NavLink to="/">Saat Teduh</NavLink>
+                <span className="footer__text">
+                  <strong>Ibadah Raya:</strong> Minggu jam 10:00
+                </span>
+                <span className="footer__text">
+                  <strong>Youth:</strong> Sabtu jam 16:00
+                </span>
+                <span className="footer__text">
+                  <strong>Sekolah Minggu:</strong> Minggu jam 10:00
+                </span>
+              </div>
+            </div>
+            <div>
+              <p className="footer__title">Gembala</p>
+              <div className="footer__links">
+                <span className="footer__text">Gembala: PS. Jimmy</span>
+                <span className="footer__text">Wakil Gembala: Ps. Freddy Budiman</span>
               </div>
             </div>
             <div>

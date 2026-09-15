@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PublicLayout from './components/PublicLayout'
 import AdminLayout from './components/AdminLayout'
 import LoginPage from './pages/LoginPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import LandingPage from './pages/LandingPage'
 import IbadahRayaPage from './pages/IbadahRayaPage'
 import YouthPage from './pages/YouthPage'
@@ -22,6 +23,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
       {/* Halaman publik */}
       <Route element={<PublicLayout />}>

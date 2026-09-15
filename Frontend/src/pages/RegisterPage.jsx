@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api/client'
 import { useSeo } from '../context/SeoContext'
 import { useSEO } from '../utils/seo'
+import { toWebp } from '../utils/image'
 
 const GOL_DARAH = ['A', 'B', 'AB', 'O']
 
@@ -34,14 +35,116 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  const isMobile =
+    typeof navigator !== 'undefined' &&
+    /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|BlackBerry|Windows Phone|Mobile/i.test(
+      navigator.userAgent,
+    )
+  const canUseCamera =
+    typeof navigator !== 'undefined' &&
+    !!navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === 'function'
+  const showCameraButton = isMobile && canUseCamera
+
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+  const previewUrlRef = useRef(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraError, setCameraError] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!cameraOpen || !streamRef.current || !videoRef.current) return
+    videoRef.current.srcObject = streamRef.current
+    videoRef.current.play().catch(() => {})
+  }, [cameraOpen])
 
   function handleChange(e) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
     setFieldErrors((fe) => ({ ...fe, [e.target.name]: undefined }))
   }
 
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    setCameraOpen(false)
+    setCameraError('')
+  }
+
+  function setSelectedPhoto(file) {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    previewUrlRef.current = file ? URL.createObjectURL(file) : null
+    setPreviewUrl(previewUrlRef.current || '')
+    setPhoto(file)
+    if (file && streamRef.current) stopCamera()
+  }
+
   function handleFile(e) {
-    setPhoto(e.target.files?.[0] || null)
+    setSelectedPhoto(e.target.files?.[0] || null)
+    e.target.value = ''
+  }
+
+  async function openCamera() {
+    setCameraError('')
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      })
+      streamRef.current = stream
+      setCameraOpen(true)
+    } catch {
+      setCameraError('Kamera tidak dapat diakses. Silakan gunakan tombol “Pilih File” untuk unggah foto.')
+    }
+  }
+
+  function canvasToJpegFile(canvas) {
+    const stamp = Date.now()
+    const qualities = [0.88, 0.75, 0.6, 0.45]
+    const attempt = (i) =>
+      new Promise((resolve) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(null)
+            if (blob.size <= 1900 * 1024 || i === qualities.length - 1) {
+              resolve(new File([blob], `kamera-${stamp}.jpg`, { type: 'image/jpeg' }))
+            } else {
+              resolve(attempt(i + 1))
+            }
+          },
+          'image/jpeg',
+          qualities[i],
+        )
+      })
+    return attempt(0)
+  }
+
+  async function capturePhoto() {
+    const video = videoRef.current
+    if (!video || !video.videoWidth || !video.videoHeight) return
+
+    const capScale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(video.videoWidth * capScale))
+    canvas.height = Math.max(1, Math.round(video.videoHeight * capScale))
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    const file = await canvasToJpegFile(canvas)
+    if (file) setSelectedPhoto(file)
+  }
+
+  function cancelCamera() {
+    stopCamera()
   }
 
   async function handleSubmit(e) {
@@ -66,7 +169,19 @@ export default function RegisterPage() {
     for (const [key, value] of Object.entries(form)) {
       if (value) body.append(key, value)
     }
-    if (photo) body.append('filename', photo)
+
+    if (photo) {
+      const baseName = (form.name || 'foto')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^A-Za-z0-9_-]/g, '_')
+      try {
+        const webp = await toWebp(photo, 215)
+        if (webp) body.append('filename', webp, `${baseName}.webp`)
+      } catch {
+        body.append('filename', photo)
+      }
+    }
 
     try {
       await api.post('/register', body)
@@ -206,15 +321,47 @@ export default function RegisterPage() {
 
             <label className="field">
               <span>Password *</span>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Minimal 8 karakter"
-                required
-                minLength={8}
-              />
+              <div className="field__input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Minimal 8 karakter"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className="field__toggle"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.3A9.6 9.6 0 0 1 12 5c5 0 8.5 4 9.5 6.5a2.2 2.2 0 0 1 0 1.6c-.5 1.1-1.3 2.5-2.4 3.7M6.6 6.6C4.2 8.2 2.7 10.3 2.5 10.7a2.2 2.2 0 0 0 0 1.6C3.5 14.8 7 19 12 19c1.2 0 2.3-.3 3.3-.7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {fieldErrors.password && (
                 <small className="field__error">{fieldErrors.password[0]}</small>
               )}
@@ -222,15 +369,47 @@ export default function RegisterPage() {
 
             <label className="field">
               <span>Konfirmasi Password *</span>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Ulangi password"
-                required
-                minLength={8}
-              />
+              <div className="field__input-wrap">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Ulangi password"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className="field__toggle"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  aria-label={showConfirmPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  aria-pressed={showConfirmPassword}
+                >
+                  {showConfirmPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.3A9.6 9.6 0 0 1 12 5c5 0 8.5 4 9.5 6.5a2.2 2.2 0 0 1 0 1.6c-.5 1.1-1.3 2.5-2.4 3.7M6.6 6.6C4.2 8.2 2.7 10.3 2.5 10.7a2.2 2.2 0 0 0 0 1.6C3.5 14.8 7 19 12 19c1.2 0 2.3-.3 3.3-.7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {fieldErrors.confirmPassword && (
                 <small className="field__error">{fieldErrors.confirmPassword[0]}</small>
               )}
@@ -258,10 +437,49 @@ export default function RegisterPage() {
               />
             </label>
 
-            <label className="field field--full">
-              <span>Foto</span>
-              <input type="file" accept="image/*" onChange={handleFile} />
-            </label>
+            <div className="field field--full">
+              <label className="register__photo-label">
+                <span>Foto</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture={isMobile ? 'user' : undefined}
+                  onChange={handleFile}
+                />
+              </label>
+
+              {showCameraButton && (
+                <div className="register__camera-tools">
+                  <button type="button" className="btn btn--ghost" onClick={openCamera}>
+                    Buka Kamera Depan
+                  </button>
+                </div>
+              )}
+
+              {cameraError && <small className="field__error">{cameraError}</small>}
+
+              {cameraOpen && (
+                <div className="register__camera">
+                  <video ref={videoRef} muted playsInline autoPlay />
+                  <div className="register__camera-tools">
+                    <button type="button" className="btn btn--primary" onClick={capturePhoto}>
+                      Ambil Foto
+                    </button>
+                    <button type="button" className="btn" onClick={cancelCamera}>
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="register__photo">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Pratinjau foto" />
+                ) : (
+                  <span className="register__photo-placeholder">Belum ada foto</span>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="register__actions">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useSEO } from '../utils/seo'
 
@@ -19,6 +20,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotStep, setForgotStep] = useState('form')
+  const [forgotError, setForgotError] = useState('')
+  const [forgotSubmitting, setForgotSubmitting] = useState(false)
 
   const homeFor = (u) => {
     if (u?.role === 'pengurus') return '/dashboard'
@@ -40,6 +46,40 @@ export default function LoginPage() {
       setError(err.response?.data?.message || 'Login gagal. Periksa email dan password.')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  function openForgotModal() {
+    setForgotOpen(true)
+    setForgotStep('form')
+    setForgotError('')
+    setForgotEmail('')
+  }
+
+  function closeForgotModal() {
+    setForgotOpen(false)
+    setForgotStep('form')
+    setForgotError('')
+    setForgotEmail('')
+    setForgotSubmitting(false)
+  }
+
+  async function handleForgotSubmit(e) {
+    e.preventDefault()
+    setForgotError('')
+    setForgotSubmitting(true)
+    try {
+      await api.post('/forgot-password', { email: forgotEmail })
+      setForgotStep('success')
+    } catch (err) {
+      const message = err.response?.data?.message || ''
+      if (err.response?.status === 422 && /tidak terdaftar/i.test(message)) {
+        setForgotStep('notfound')
+      } else {
+        setForgotError(message || 'Terjadi kesalahan. Silakan coba lagi.')
+      }
+    } finally {
+      setForgotSubmitting(false)
     }
   }
 
@@ -103,6 +143,11 @@ export default function LoginPage() {
             </button>
           </div>
         </label>
+        <div className="auth-forgot">
+          <button type="button" className="auth-forgot__link" onClick={openForgotModal}>
+            Lupa password?
+          </button>
+        </div>
         <div className="auth-actions">
           <Link to="/" className="btn btn--primary auth-back" aria-label="Kembali ke beranda">
             <svg
@@ -127,6 +172,83 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
+
+      {forgotOpen && (
+        <div className="modal-overlay" onClick={closeForgotModal}>
+          <div className="modal modal--forgot" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <h3>
+                {forgotStep === 'notfound'
+                  ? 'Email Belum Terdaftar'
+                  : forgotStep === 'success'
+                    ? 'Link Terkirim'
+                    : 'Lupa Password'}
+              </h3>
+              <button type="button" className="modal__close" onClick={closeForgotModal} aria-label="Tutup">
+                ×
+              </button>
+            </div>
+            <div className="modal__body modal__body--auth">
+              {forgotStep === 'notfound' ? (
+                <>
+                  <p>
+                    Email <strong>{forgotEmail}</strong> belum terdaftar sebagai jemaat GBI PLC.
+                  </p>
+                  <p className="muted">Silakan daftar terlebih dahulu untuk membuat akun Anda.</p>
+                  <div className="auth-actions">
+                    <Link to="/register" className="btn btn--primary">
+                      Daftar
+                    </Link>
+                    <Link to="/" className="btn auth-back">
+                      Kembali
+                    </Link>
+                  </div>
+                </>
+              ) : forgotStep === 'success' ? (
+                <>
+                  <p>
+                    Link reset password telah dikirim ke <strong>{forgotEmail}</strong>.
+                  </p>
+                  <p className="muted">
+                    Link hanya berlaku selama 1 jam. Periksa kotak masuk email Anda.
+                  </p>
+                  <div className="auth-actions">
+                    <button type="button" className="btn btn--primary" onClick={closeForgotModal}>
+                      Kembali ke Login
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <form onSubmit={handleForgotSubmit}>
+                  <p className="muted">
+                    Masukkan alamat email Anda. Kami akan mengirimkan link untuk mereset password.
+                  </p>
+                  <label className="field">
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="nama@email.com"
+                      required
+                      autoFocus
+                    />
+                  </label>
+                  {forgotError && <div className="alert alert--error">{forgotError}</div>}
+                  <div className="auth-actions">
+                    <button type="submit" className="btn btn--primary" disabled={forgotSubmitting}>
+                      {forgotSubmitting ? 'Mengirim…' : 'Kirim Link Password'}
+                    </button>
+                    <button type="button" className="btn" onClick={closeForgotModal}>
+                      Kembali
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml'];
+const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml', 'image/webp'];
 
 /**
  * Upload single file image (untuk foto jemaat, carousel, dll).

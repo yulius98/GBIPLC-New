@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '../../utils/prisma.js';
 import mailService from '../../services/mail.service.js';
-const RESET_TOKEN_HOURS = 2; // token berlaku 2 jam
+const RESET_TOKEN_HOURS = 1; // token berlaku 1 jam
 
 /**
  * Controller reset password via email.
