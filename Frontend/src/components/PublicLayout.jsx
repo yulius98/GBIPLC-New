@@ -53,14 +53,33 @@ export default function PublicLayout() {
           <NavLink to="/kontak" onClick={() => setMenuOpen(false)}>
             Kontak
           </NavLink>
-          <NavLink to="/register" onClick={() => setMenuOpen(false)}>
-            Registrasi
-          </NavLink>
+          {user?.role === 'jemaat' && (
+            <>
+              <NavLink to="/gemar-alkitab" onClick={() => setMenuOpen(false)}>
+                Gemar Alkitab
+              </NavLink>
+              <NavLink to="/happy-bday" onClick={() => setMenuOpen(false)}>
+                Happy B'day
+              </NavLink>
+            </>
+          )}
+          {user?.role === 'jemaat' ? (
+            <NavLink to="/data-saya" onClick={() => setMenuOpen(false)}>
+              Data Saya
+            </NavLink>
+          ) : (
+            <NavLink to="/register" onClick={() => setMenuOpen(false)}>
+              Registrasi
+            </NavLink>
+          )}
         </nav>
         <div className="navbar__user">
           {user ? (
             <>
-              <NavLink to="/profile" className="navbar__user-name">
+              <NavLink
+                to={user.role === 'jemaat' ? '/data-saya' : '/profile'}
+                className="navbar__user-name"
+              >
                 {user.name}
               </NavLink>
               <button
@@ -132,8 +151,12 @@ export default function PublicLayout() {
                 <NavLink to="/life-group">Life Group</NavLink>
                 <NavLink to="/tentang">Tentang Kami</NavLink>
                 <NavLink to="/kontak">Kontak</NavLink>
+                {user?.role === 'jemaat' ? (
+                <NavLink to="/data-saya">Data Saya</NavLink>
+              ) : (
                 <NavLink to="/register">Registrasi</NavLink>
-                <NavLink to="/login">Login</NavLink>
+              )}
+              <NavLink to="/login">Login</NavLink>
               </div>
             </div>
             <div>

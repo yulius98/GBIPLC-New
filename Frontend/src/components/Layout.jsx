@@ -21,6 +21,12 @@ export default function Layout() {
           <NavLink to="/">Beranda</NavLink>
           <NavLink to="/events">Agenda</NavLink>
           <NavLink to="/profile">Profil</NavLink>
+          {user?.role === 'jemaat' && (
+            <>
+              <NavLink to="/gemar-alkitab">Gemar Alkitab</NavLink>
+              <NavLink to="/happy-bday">Happy B'day</NavLink>
+            </>
+          )}
           {user?.role === 'pengurus' && <NavLink to="/dashboard">Dashboard</NavLink>}
         </nav>
         <div className="navbar__user">

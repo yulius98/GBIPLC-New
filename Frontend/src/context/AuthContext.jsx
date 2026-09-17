@@ -45,8 +45,17 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  function updateUser(data) {
+    if (!data) return
+    setUser((prev) => {
+      const next = { ...(prev || {}), ...data }
+      localStorage.setItem('gbipc_user', JSON.stringify(next))
+      return next
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

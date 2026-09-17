@@ -49,4 +49,41 @@ async function authenticate(req, res, next) {
   }
 }
 
+/**
+ * Middleware autentikasi opsional: jika token dikirim, set req.user.
+ * Jika tidak ada token (atau token rusak), lanjutkan tanpa req.user.
+ * Dipakai endpoint yang bisa diakses publik tapi tetap personal saat login.
+ */
+async function optionalAuthenticate(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) return next();
+
+  try {
+    const payload = jwt.verify(token, env.jwt.secret, {
+      algorithms: [env.jwt.algorithm],
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        filename: true,
+        reading_start_date: true,
+      },
+    });
+
+    if (user) req.user = user;
+  } catch {
+    // Token invalid/expired: abaikan, perlakukan sebagai request publik.
+  }
+
+  next();
+}
+
 export default authenticate;
+export { optionalAuthenticate };

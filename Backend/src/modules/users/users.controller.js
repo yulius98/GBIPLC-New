@@ -136,10 +136,13 @@ const usersController = {
 
   /**
    * GET /api/birthday
-   * Daftar jemaat yang berulang tahun pada bulan ini.
+   * Daftar jemaat yang berulang tahun bulan ini.
+   * Query ?months=2 untuk menyertakan bulan sebelumnya juga.
    */
   async birthdays(req, res) {
     const month = dayjs().month() + 1; // dayjs month 0-11
+    const includePrevious = req.query.months === '2';
+    const previousMonth = month === 1 ? 12 : month - 1;
 
     const users = await prisma.user.findMany({
       where: {
@@ -151,7 +154,12 @@ const usersController = {
 
     // Filter di JS karena Prisma tidak mendukung whereMonth langsung
     const birthdays = users
-      .filter((u) => dayjs(u.tgl_lahir).month() + 1 === month)
+      .filter((u) => {
+        const birthMonth = dayjs(u.tgl_lahir).month() + 1;
+        return includePrevious
+          ? birthMonth === month || birthMonth === previousMonth
+          : birthMonth === month;
+      })
       .map(serializeUser);
 
     if (birthdays.length === 0) {

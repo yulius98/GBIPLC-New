@@ -12,6 +12,9 @@ import YouthPage from './pages/YouthPage'
 import LifeGroupPage from './pages/LifeGroupPage'
 import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
+import GemarAlkitabPage from './pages/GemarAlkitabPage'
+import HappyBdayPage from './pages/HappyBdayPage'
+import MyDataPage from './pages/MyDataPage'
 import ProfilePage from './pages/ProfilePage'
 import EventsPage from './pages/EventsPage'
 import DashboardPage from './pages/DashboardPage'
@@ -36,6 +39,30 @@ function App() {
         <Route path="/life-group" element={<LifeGroupPage />} />
         <Route path="/kontak" element={<ContactPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/gemar-alkitab"
+          element={
+            <ProtectedRoute>
+              <GemarAlkitabPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/happy-bday"
+          element={
+            <ProtectedRoute>
+              <HappyBdayPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/data-saya"
+          element={
+            <ProtectedRoute role="jemaat">
+              <MyDataPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Halaman berisi login */}
