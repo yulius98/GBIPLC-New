@@ -53,6 +53,7 @@ export default function RegisterPage() {
   const streamRef = useRef(null)
   const previewUrlRef = useRef(null)
   const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState('')
   const [previewUrl, setPreviewUrl] = useState('')
 
@@ -65,8 +66,19 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!cameraOpen || !streamRef.current || !videoRef.current) return
-    videoRef.current.srcObject = streamRef.current
-    videoRef.current.play().catch(() => {})
+    const video = videoRef.current
+    video.srcObject = streamRef.current
+    setCameraReady(false)
+    const onReady = () => {
+      if (video.videoWidth && video.videoHeight) setCameraReady(true)
+    }
+    video.addEventListener('loadedmetadata', onReady)
+    video.addEventListener('canplay', onReady)
+    video.play().catch(() => {})
+    return () => {
+      video.removeEventListener('loadedmetadata', onReady)
+      video.removeEventListener('canplay', onReady)
+    }
   }, [cameraOpen])
 
   function handleChange(e) {
@@ -78,6 +90,7 @@ export default function RegisterPage() {
     streamRef.current?.getTracks().forEach((track) => track.stop())
     streamRef.current = null
     setCameraOpen(false)
+    setCameraReady(false)
     setCameraError('')
   }
 
@@ -102,6 +115,7 @@ export default function RegisterPage() {
         audio: false,
       })
       streamRef.current = stream
+      setCameraReady(false)
       setCameraOpen(true)
     } catch {
       setCameraError('Kamera tidak dapat diakses. Silakan gunakan tombol “Pilih File” untuk unggah foto.')
@@ -131,7 +145,10 @@ export default function RegisterPage() {
 
   async function capturePhoto() {
     const video = videoRef.current
-    if (!video || !video.videoWidth || !video.videoHeight) return
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      setCameraError('Kamera belum siap. Tunggu sebentar lalu coba lagi.')
+      return
+    }
 
     const capScale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight))
     const canvas = document.createElement('canvas')
@@ -177,7 +194,11 @@ export default function RegisterPage() {
         .replace(/[^A-Za-z0-9_-]/g, '_')
       try {
         const webp = await toWebp(photo, 215)
-        if (webp) body.append('filename', webp, `${baseName}.webp`)
+        if (webp) {
+          body.append('filename', webp, `${baseName}.webp`)
+        } else {
+          body.append('filename', photo)
+        }
       } catch {
         body.append('filename', photo)
       }
@@ -462,8 +483,13 @@ export default function RegisterPage() {
                 <div className="register__camera">
                   <video ref={videoRef} muted playsInline autoPlay />
                   <div className="register__camera-tools">
-                    <button type="button" className="btn btn--primary" onClick={capturePhoto}>
-                      Ambil Foto
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      onClick={capturePhoto}
+                      disabled={!cameraReady}
+                    >
+                      {cameraReady ? 'Ambil Foto' : 'Menyiapkan kamera…'}
                     </button>
                     <button type="button" className="btn" onClick={cancelCamera}>
                       Batal

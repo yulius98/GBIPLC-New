@@ -7,6 +7,19 @@ import env from '../config/env.js';
  */
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
+  // Error upload (multer): kembalikan pesan yang jelas, bukan 500 generik
+  if (err.name === 'MulterError') {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'Ukuran file terlalu besar (maksimal 2MB).'
+        : 'Gagal mengunggah file.';
+    return apiResponse.error(res, {
+      message,
+      statusCode: 422,
+      errors: { filename: [message] },
+    });
+  }
+
   // Error dari Prisma (database)
   if (err.name === 'PrismaClientKnownRequestError') {
     const map = {

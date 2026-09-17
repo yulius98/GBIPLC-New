@@ -32,3 +32,5 @@ prisma/generated/
 Thumbs.db
 .vscode/
 .idea/
+
+Dockerfile

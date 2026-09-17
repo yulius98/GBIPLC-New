@@ -95,42 +95,6 @@ export default function LandingPage() {
       <div className="container container--wide">
         {error && <div className="alert alert--error">{error}</div>}
 
-        {/* Tentang gereja (SEO & NAP) */}
-        <section className="landing__section landing__intro">
-          <div className="section-head">
-            <div>
-              <span className="section-head__eyebrow">Selamat datang</span>
-              <h2 className="section-title">Gereja di Yogyakarta untuk Keluarga Anda</h2>
-            </div>
-          </div>
-          <div className="intro-grid">
-            <article className="card intro-card">
-              <h3>{seo.church.name}</h3>
-              <p>
-                GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di Yogyakarta yang
-                terbuka bagi setiap keluarga. Kami merayakan{' '}
-                <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>, membagikan{' '}
-                <strong>materi kotbah</strong> dan renungan <strong>Saat Teduh</strong> harian,
-                serta melayani generasi muda lewat Youth Ministry dan persekutuan Life Group.
-              </p>
-            </article>
-            <article className="card intro-card">
-              <h3>Kunjungi Kami</h3>
-              <p>{seo.church.address.streetAddress}</p>
-              <p>
-                {seo.church.address.addressLocality}, {seo.church.address.addressRegion}{' '}
-                {seo.church.address.postalCode}
-              </p>
-              <p>
-                WhatsApp:{' '}
-                <a href={`https://wa.me/${seo.church.whatsapp}`} target="_blank" rel="noreferrer">
-                  +62 853-3661-8852
-                </a>
-              </p>
-            </article>
-          </div>
-        </section>
-
         {/* Section 2: Saat Teduh */}
         <section className="landing__section">
           <div className="section-head">

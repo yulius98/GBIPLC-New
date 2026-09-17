@@ -27,11 +27,17 @@ export default function PublicLayout() {
   return (
     <div className="layout layout--public">
       <header className={navClass}>
-        <NavLink to="/" className="navbar__brand" onClick={() => setMenuOpen(false)}>
+        <NavLink
+          to="/"
+          className="navbar__brand"
+          onClick={() => setMenuOpen(false)}
+        >
           <span className="navbar__brand-mark">GBI</span>
           GBI PLC
         </NavLink>
-        <nav className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
+        <nav
+          className={`navbar__links ${menuOpen ? "navbar__links--open" : ""}`}
+        >
           <NavLink to="/ibadah-raya" onClick={() => setMenuOpen(false)}>
             Ibadah Raya
           </NavLink>
@@ -40,6 +46,12 @@ export default function PublicLayout() {
           </NavLink>
           <NavLink to="/life-group" onClick={() => setMenuOpen(false)}>
             Life Group
+          </NavLink>
+          <NavLink to="/tentang" onClick={() => setMenuOpen(false)}>
+            Tentang
+          </NavLink>
+          <NavLink to="/kontak" onClick={() => setMenuOpen(false)}>
+            Kontak
           </NavLink>
           <NavLink to="/register" onClick={() => setMenuOpen(false)}>
             Registrasi
@@ -51,7 +63,11 @@ export default function PublicLayout() {
               <NavLink to="/profile" className="navbar__user-name">
                 {user.name}
               </NavLink>
-              <button type="button" className="btn btn--ghost" onClick={handleLogout}>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={handleLogout}
+              >
                 Keluar
               </button>
             </>
@@ -68,7 +84,13 @@ export default function PublicLayout() {
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((o) => !o)}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
             {menuOpen ? (
               <path
                 d="M6 6l12 12M18 6L6 18"
@@ -108,6 +130,8 @@ export default function PublicLayout() {
                 <NavLink to="/ibadah-raya">Ibadah Raya</NavLink>
                 <NavLink to="/youth">Youth</NavLink>
                 <NavLink to="/life-group">Life Group</NavLink>
+                <NavLink to="/tentang">Tentang Kami</NavLink>
+                <NavLink to="/kontak">Kontak</NavLink>
                 <NavLink to="/register">Registrasi</NavLink>
                 <NavLink to="/login">Login</NavLink>
               </div>
@@ -129,16 +153,23 @@ export default function PublicLayout() {
             <div>
               <p className="footer__title">Gembala</p>
               <div className="footer__links">
-                <span className="footer__text">Gembala: PS. Jimmy</span>
-                <span className="footer__text">Wakil Gembala: Ps. Freddy Budiman</span>
+                <span className="footer__text">
+                  Gembala: Pdm. Jimmy Sugiarto
+                </span>
+                <span className="footer__text">
+                  Wakil Gembala: Pdm. Freddy Budiman
+                </span>
               </div>
             </div>
             <div>
               <p className="footer__title">Kontak</p>
               <div className="footer__links">
-                <span className="footer__text">{seo.church.address.streetAddress}</span>
                 <span className="footer__text">
-                  {seo.church.address.addressLocality}, {seo.church.address.addressRegion}{' '}
+                  {seo.church.address.streetAddress}
+                </span>
+                <span className="footer__text">
+                  {seo.church.address.addressLocality},{" "}
+                  {seo.church.address.addressRegion}{" "}
                   {seo.church.address.postalCode}
                 </span>
                 <a
@@ -152,11 +183,11 @@ export default function PublicLayout() {
             </div>
           </div>
           <div className="footer__bottom">
-            &copy; {new Date().getFullYear()} GBI Philadelphia Life Center. Dibuat dengan
-            kasih.
+            &copy; {new Date().getFullYear()} GBI Philadelphia Life Center.
+            Dibuat dengan kasih.
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

@@ -7,8 +7,10 @@ import LoginPage from './pages/LoginPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import LandingPage from './pages/LandingPage'
 import IbadahRayaPage from './pages/IbadahRayaPage'
+import AboutPage from './pages/AboutPage'
 import YouthPage from './pages/YouthPage'
 import LifeGroupPage from './pages/LifeGroupPage'
+import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import EventsPage from './pages/EventsPage'
@@ -29,8 +31,10 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/ibadah-raya" element={<IbadahRayaPage />} />
+        <Route path="/tentang" element={<AboutPage />} />
         <Route path="/youth" element={<YouthPage />} />
         <Route path="/life-group" element={<LifeGroupPage />} />
+        <Route path="/kontak" element={<ContactPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
