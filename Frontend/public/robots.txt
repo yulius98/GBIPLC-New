@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /login
+Disallow: /reset-password/
+Disallow: /dashboard
+Disallow: /events
+Disallow: /profile
+Disallow: /gemar-alkitab
+Disallow: /happy-bday
+Disallow: /data-saya
 
 Sitemap: https://philadelphialifecenter.devprox.my.id/sitemap.xml
