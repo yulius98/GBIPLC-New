@@ -79,7 +79,7 @@ export function useSEO({
 
     return () => {
       document.head
-        .querySelectorAll('script[data-seo-jsonld]')
+        .querySelectorAll('script[data-seo-json-ld]')
         .forEach((el) => el.remove())
     }
   }, [title, description, keywords, path, jsonLd, noindex, seo])

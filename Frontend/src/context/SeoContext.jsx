@@ -8,7 +8,7 @@ import defaultSeo from '../config/seo'
  * ke default agar situs tetap berfungsi bila setting belum diisi.
  */
 function mapToConfig(row = {}) {
-  const s = (key) => (row[key] === undefined || row[key] === null ? '' : String(row[key]))
+  const s = (key) => (row[key] === undefined || row[key] === null ? '' : String(row[key]).trim())
   const ogImage = s('og_image')
   return {
     siteName: s('site_name') || defaultSeo.siteName,
