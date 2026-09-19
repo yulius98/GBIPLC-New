@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSeo } from '../context/SeoContext'
 import { useSEO } from '../utils/seo'
+import { buildChurchJsonLd } from "../utils/churchJsonLd";
 
 export default function ContactPage() {
   const seo = useSeo()
@@ -24,28 +25,7 @@ export default function ContactPage() {
     'Halo, saya ingin bertanya tentang GBI Philadelphia Life Center.',
   )}`
 
-  const contactJsonLd = useMemo(
-    () => ({
-      '@context': 'https://schema.org',
-      '@type': 'LocalBusiness',
-      name: seo.church.name,
-      alternateName: seo.church.alternateName,
-      description: seo.church.description,
-      url: `${seo.siteUrl}/kontak`,
-      telephone: seo.church.telephone,
-      address: {
-        '@type': 'PostalAddress',
-        ...seo.church.address,
-      },
-      openingHoursSpecification: {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: seo.church.service.dayOfWeek,
-        opens: seo.church.service.opens,
-        closes: seo.church.service.closes,
-      },
-    }),
-    [seo],
-  )
+  const contactJsonLd = useMemo(() => buildChurchJsonLd(seo, "/kontak"), [seo]);
 
   useSEO({
     path: '/kontak',
@@ -67,8 +47,8 @@ export default function ContactPage() {
         <span className="section-head__eyebrow">Hubungi Kami</span>
         <h1>Kunjungi GBI Philadelphia Life Center</h1>
         <p className="muted">
-          Kami senang menyambut Anda dan keluarga. Datanglah ke ibadah raya atau hubungi kami
-          melalui WhatsApp — kami siap melayani.
+          Kami senang menyambut Anda dan keluarga. Datanglah ke ibadah raya atau
+          hubungi kami melalui WhatsApp — kami siap melayani.
         </p>
       </section>
 
@@ -82,19 +62,31 @@ export default function ContactPage() {
                 <br />
                 {seo.church.address.streetAddress}
                 <br />
-                {seo.church.address.addressLocality}, {seo.church.address.addressRegion}
-
-                {seo.church.address.postalCode ? ` ${seo.church.address.postalCode}` : ''}
+                {seo.church.address.addressLocality},{" "}
+                {seo.church.address.addressRegion}
+                {seo.church.address.postalCode
+                  ? ` ${seo.church.address.postalCode}`
+                  : ""}
               </p>
-              <a className="btn btn--ghost contact-card__maps" href={mapsLink} target="_blank" rel="noreferrer">
+              <a
+                className="btn btn--ghost contact-card__maps"
+                href={mapsLink}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Lihat di Google Maps
               </a>
             </section>
 
             <section className="card contact-card">
               <h2>WhatsApp</h2>
-              <p className="contact-card__whatsapp">+62 853-3661-8852</p>
-              <a className="btn btn--primary" href={waLink} target="_blank" rel="noreferrer">
+              <p className="contact-card__whatsapp">{seo.church.telephone}</p>
+              <a
+                className="btn btn--primary"
+                href={waLink}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Chat WhatsApp
               </a>
             </section>
@@ -114,10 +106,16 @@ export default function ContactPage() {
             <section className="card contact-card">
               <h2>Konsultasi / Pelayanan</h2>
               <p className="contact-card__text">
-                Butuh dukungan doa, konseling, atau ingin bergabung dalam pelayanan? Tim
-                pelayanan kami siap membantu Anda pada jam kerja gereja.
+                Butuh dukungan doa, konseling, atau ingin bergabung dalam
+                pelayanan? Tim pelayanan kami siap membantu Anda pada jam kerja
+                gereja.
               </p>
-              <a className="btn btn--primary" href={waLink} target="_blank" rel="noreferrer">
+              <a
+                className="btn btn--primary"
+                href={waLink}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Kirim Pesan
               </a>
             </section>
@@ -136,5 +134,5 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

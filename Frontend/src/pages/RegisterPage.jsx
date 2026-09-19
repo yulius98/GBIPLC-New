@@ -11,12 +11,13 @@ export default function RegisterPage() {
   const seo = useSeo()
 
   useSEO({
-    path: '/register',
-    title: 'Pendaftaran Jemaat Baru',
+    path: "/register",
+    title: "Pendaftaran Jemaat Baru",
     description:
-      'Daftar sebagai jemaat baru GBI Philadelphia Life Center (GBI PLC), gereja di Yogyakarta. Isi data diri Anda dan bergabung dalam keluarga gereja.',
+      "Daftar sebagai jemaat baru GBI Philadelphia Life Center (GBI PLC), gereja di Yogyakarta. Isi data diri Anda dan bergabung dalam keluarga gereja.",
     keywords: seo.keywords,
-  })
+    noindex: true,
+  });
 
   const [form, setForm] = useState({
     name: '',

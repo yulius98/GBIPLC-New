@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../api/client'
 import { useSeo } from '../context/SeoContext'
 import { useSEO } from '../utils/seo'
+import { buildChurchJsonLd } from "../utils/churchJsonLd";
 
 function formatDate(value) {
   return new Date(value).toLocaleDateString('id-ID', {
@@ -16,11 +17,12 @@ export default function LandingPage() {
   const seo = useSeo()
 
   useSEO({
-    path: '/',
+    path: "/",
     title: seo.defaultTitle,
     description: seo.defaultDescription,
     keywords: seo.keywords,
-  })
+    jsonLd: buildChurchJsonLd(seo),
+  });
 
   const [carousel, setCarousel] = useState([])
   const [pastorNote, setPastorNote] = useState(null)
@@ -61,9 +63,15 @@ export default function LandingPage() {
       <section className="hero-slider hero-slider--landing">
         {carousel.length > 0 ? (
           carousel.map((item, i) => (
-            <div key={item.id} className={`slide ${i === slide ? 'slide--active' : ''}`}>
+            <div
+              key={item.id}
+              className={`slide ${i === slide ? "slide--active" : ""}`}
+            >
               {item.filename && (
-                <img src={`${MEDIA_URL}/uploads/${item.filename}`} alt={item.tema} />
+                <img
+                  src={`${MEDIA_URL}/uploads/${item.filename}`}
+                  alt={item.tema}
+                />
               )}
               <div className="slide__caption">
                 <h1>{item.tema}</h1>
@@ -83,7 +91,7 @@ export default function LandingPage() {
               <button
                 key={item.id}
                 type="button"
-                className={`slider__dot ${i === slide ? 'slider__dot--active' : ''}`}
+                className={`slider__dot ${i === slide ? "slider__dot--active" : ""}`}
                 aria-label={`Slide ${i + 1}`}
                 onClick={() => setSlide(i)}
               />
@@ -101,7 +109,10 @@ export default function LandingPage() {
             <div>
               <span className="section-head__eyebrow">Renungan</span>
               <h2 className="section-title">
-                Saat Teduh {pastorNote?.tgl_note ? `— ${formatDate(pastorNote.tgl_note)}` : ''}
+                Saat Teduh{" "}
+                {pastorNote?.tgl_note
+                  ? `— ${formatDate(pastorNote.tgl_note)}`
+                  : ""}
               </h2>
             </div>
           </div>
@@ -151,7 +162,9 @@ export default function LandingPage() {
                   )}
                   <div className="event-card__body">
                     <h3>{ev.keterangan}</h3>
-                    {ev.isi_event && <p className="event-card__desc">{ev.isi_event}</p>}
+                    {ev.isi_event && (
+                      <p className="event-card__desc">{ev.isi_event}</p>
+                    )}
                   </div>
                 </article>
               ))}
@@ -160,5 +173,5 @@ export default function LandingPage() {
         </section>
       </div>
     </div>
-  )
+  );
 }

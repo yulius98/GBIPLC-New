@@ -1,68 +1,72 @@
-import { Link } from 'react-router-dom'
-import { useSeo } from '../context/SeoContext'
-import { useSEO } from '../utils/seo'
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useSeo } from "../context/SeoContext";
+import { useSEO } from "../utils/seo";
 
 const ministries = [
   {
-    icon: 'IR',
-    title: 'Ibadah Raya',
-    frequency: 'Setiap Minggu, 10.00 WIB',
+    icon: "IR",
+    title: "Ibadah Raya",
+    frequency: "Setiap Minggu, 10.00 WIB",
     description:
-      'Perayaan bersama keluarga besar GBI PLC — menyembah Tuhan, mendengarkan kotbah, dan bertumbuh dalam iman.',
+      "Perayaan bersama keluarga besar GBI PLC — menyembah Tuhan, mendengarkan kotbah, dan bertumbuh dalam iman.",
   },
   {
-    icon: 'ST',
-    title: 'Materi Kotbah & Saat Teduh',
-    frequency: 'Mingguan & Harian',
+    icon: "ST",
+    title: "Materi Kotbah & Saat Teduh",
+    frequency: "Mingguan & Harian",
     description:
-      'Dapatkan materi kotbah mingguan dan renungan Saat Teduh harian untuk memperdalam perjalanan rohani Anda.',
+      "Dapatkan materi kotbah mingguan dan renungan Saat Teduh harian untuk memperdalam perjalanan rohani Anda.",
   },
   {
-    icon: 'YM',
-    title: 'Youth Ministry',
-    frequency: 'Sabtu, 16.00 WIB',
+    icon: "YM",
+    title: "Youth Ministry",
+    frequency: "Sabtu, 16.00 WIB",
     description:
-      'Wadah bagi generasi muda untuk bertumbuh dalam iman, persekutuan, dan pelayanan.',
+      "Wadah bagi generasi muda untuk bertumbuh dalam iman, persekutuan, dan pelayanan.",
   },
   {
-    icon: 'LG',
-    title: 'Life Group',
-    frequency: 'Terjadwal',
+    icon: "LG",
+    title: "Life Group",
+    frequency: "Terjadwal",
     description:
-      'Persekutuan kecil antar keluarga agar setiap anggota saling menguatkan dan bertumbuh bersama.',
+      "Persekutuan kecil antar keluarga agar setiap anggota saling menguatkan dan bertumbuh bersama.",
   },
-]
+];
 
 export default function AboutPage() {
-  const seo = useSeo()
+  const seo = useSeo();
 
-  const churchJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Church',
-    name: seo.church.name,
-    alternateName: seo.church.alternateName,
-    description: seo.church.description,
-    url: `${seo.siteUrl}/tentang`,
-    telephone: seo.church.telephone,
-    address: {
-      '@type': 'PostalAddress',
-      ...seo.church.address,
-    },
-    openingHoursSpecification: {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: seo.church.service.dayOfWeek,
-      opens: seo.church.service.opens,
-      closes: seo.church.service.closes,
-    },
-  }
+  const churchJsonLd = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "Church",
+      name: seo.church.name,
+      alternateName: seo.church.alternateName,
+      description: seo.church.description,
+      url: `${seo.siteUrl}/tentang`,
+      telephone: seo.church.telephone,
+      address: {
+        "@type": "PostalAddress",
+        ...seo.church.address,
+      },
+      openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: seo.church.service.dayOfWeek,
+        opens: seo.church.service.opens,
+        closes: seo.church.service.closes,
+      },
+    }),
+    [seo],
+  );
 
   useSEO({
-    path: '/tentang',
-    title: 'Tentang Kami',
+    path: "/tentang",
+    title: "Tentang Kami",
     description: `Tentang ${seo.church.name} (GBI PLC) — gereja Bethel di Yogyakarta untuk keluarga. Ibadah Raya setiap Minggu pukul 10.00 WIB, materi kotbah, Saat Teduh, Youth Ministry, dan Life Group.`,
     keywords: seo.keywords,
     jsonLd: churchJsonLd,
-  })
+  });
 
   return (
     <div className="about">
@@ -70,8 +74,8 @@ export default function AboutPage() {
         <span className="section-head__eyebrow">Tentang Kami</span>
         <h1>Mengenal GBI Philadelphia Life Center</h1>
         <p className="muted">
-          Gereja Bethel di Yogyakarta yang terbuka bagi setiap keluarga untuk bertumbuh
-          dalam iman dan kasih Kristus.
+          Gereja Bethel di Yogyakarta yang terbuka bagi setiap keluarga untuk
+          bertumbuh dalam iman dan kasih Kristus.
         </p>
       </section>
 
@@ -80,21 +84,25 @@ export default function AboutPage() {
           <div className="section-head">
             <div>
               <span className="section-head__eyebrow">Siapa Kami</span>
-              <h2 className="section-title">Sebuah Keluarga Iman di Jantung Yogyakarta</h2>
+              <h2 className="section-title">
+                Sebuah Keluarga Iman di Jantung Yogyakarta
+              </h2>
             </div>
           </div>
           <p className="about__lede">{seo.church.description}</p>
           <p className="about__text">
-            GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di Yogyakarta yang
-            terbuka bagi setiap keluarga. Kami merayakan{' '}
-            <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>, membagikan{' '}
-            <strong>materi kotbah</strong> dan renungan <strong>Saat Teduh</strong> harian,
-            serta melayani generasi muda lewat Youth Ministry dan persekutuan Life Group.
+            GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di
+            Yogyakarta yang terbuka bagi setiap keluarga. Kami merayakan{" "}
+            <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>,
+            membagikan <strong>materi kotbah</strong> dan renungan{" "}
+            <strong>Saat Teduh</strong> harian, serta melayani generasi muda
+            lewat Youth Ministry dan persekutuan Life Group.
           </p>
           <p className="about__text">
-            Kami percaya gereja adalah rumah — tempat setiap orang disambut, diperlengkapi,
-            dan dikirim untuk menjadi berkat bagi Yogyakarta. Apapun tahap hidup Anda, ada
-            tempat bagi Anda dalam keluarga GBI PLC.
+            Kami percaya gereja adalah rumah — tempat setiap orang disambut,
+            diperlengkapi, dan dikirim untuk menjadi berkat bagi Yogyakarta.
+            Apapun tahap hidup Anda, ada tempat bagi Anda dalam keluarga GBI
+            PLC.
           </p>
           <div className="about__actions">
             <Link to="/kontak" className="btn btn--primary">
@@ -126,5 +134,5 @@ export default function AboutPage() {
         </section>
       </div>
     </div>
-  )
+  );
 }
