@@ -85,13 +85,14 @@ const DOCUMENT_MIMES = [
 function uploadDocument(fields) {
   return multer({
     storage,
-    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
     fileFilter(req, file, cb) {
-      const isImage = file.mimetype.startsWith('image/');
+      const isImage = file.mimetype.startsWith("image/");
       if (isImage || DOCUMENT_MIMES.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new AppError('File harus berupa gambar, PDF, atau PowerPoint.', 422));
+        cb(
+          new AppError("File harus berupa gambar, PDF, atau PowerPoint.", 422),
+        );
       }
     },
   }).fields(fields);
