@@ -11,39 +11,57 @@ function mapToConfig(row = {}) {
   const s = (key) => (row[key] === undefined || row[key] === null ? '' : String(row[key]).trim())
   const ogImage = s('og_image')
   return {
-    siteName: s('site_name') || defaultSeo.siteName,
-    siteNameShort: s('site_name_short') || defaultSeo.siteNameShort,
-    siteUrl: s('site_url') || defaultSeo.siteUrl,
-    locale: s('locale') || defaultSeo.locale,
-    defaultTitle: s('default_title') || defaultSeo.defaultTitle,
-    defaultDescription: s('default_description') || defaultSeo.defaultDescription,
-    keywords: s('keywords') || defaultSeo.keywords,
+    siteName: s("site_name") || defaultSeo.siteName,
+    siteNameShort: s("site_name_short") || defaultSeo.siteNameShort,
+    siteUrl: s("site_url") || defaultSeo.siteUrl,
+    locale: s("locale") || defaultSeo.locale,
+    defaultTitle: s("default_title") || defaultSeo.defaultTitle,
+    defaultDescription:
+      s("default_description") || defaultSeo.defaultDescription,
+    keywords: s("keywords") || defaultSeo.keywords,
     ogImage: ogImage ? `${MEDIA_URL}/uploads/${ogImage}` : defaultSeo.ogImage,
     church: {
-      name: s('church_name') || defaultSeo.church.name,
-      alternateName: s('church_alternate_name') || defaultSeo.church.alternateName,
-      description: s('church_description') || defaultSeo.church.description,
-      telephone: s('telephone') || defaultSeo.church.telephone,
-      whatsapp: s('whatsapp') || defaultSeo.church.whatsapp,
+      name: s("church_name") || defaultSeo.church.name,
+      alternateName:
+        s("church_alternate_name") || defaultSeo.church.alternateName,
+      description: s("church_description") || defaultSeo.church.description,
+      telephone: s("telephone") || defaultSeo.church.telephone,
+      whatsapp: s("whatsapp") || defaultSeo.church.whatsapp,
       address: {
-        streetAddress: s('street_address') || defaultSeo.church.address.streetAddress,
-        addressLocality: s('address_locality') || defaultSeo.church.address.addressLocality,
-        addressRegion: s('address_region') || defaultSeo.church.address.addressRegion,
-        postalCode: s('postal_code') || defaultSeo.church.address.postalCode,
-        addressCountry: s('address_country') || defaultSeo.church.address.addressCountry,
+        streetAddress:
+          s("street_address") || defaultSeo.church.address.streetAddress,
+        addressLocality:
+          s("address_locality") || defaultSeo.church.address.addressLocality,
+        addressRegion:
+          s("address_region") || defaultSeo.church.address.addressRegion,
+        postalCode: s("postal_code") || defaultSeo.church.address.postalCode,
+        addressCountry:
+          s("address_country") || defaultSeo.church.address.addressCountry,
       },
       service: {
-        name: s('service_name') || defaultSeo.church.service.name,
-        dayOfWeek: s('day_of_week') || defaultSeo.church.service.dayOfWeek,
-        opens: s('opens') || defaultSeo.church.service.opens,
-        closes: s('closes') || defaultSeo.church.service.closes,
+        name: s("service_name") || defaultSeo.church.service.name,
+        dayOfWeek: s("day_of_week") || defaultSeo.church.service.dayOfWeek,
+        opens: s("opens") || defaultSeo.church.service.opens,
+        closes: s("closes") || defaultSeo.church.service.closes,
       },
       social: {
-        instagram: s('instagram'),
-        facebook: s('facebook'),
+        instagram: s("instagram"),
+        facebook: s("facebook"),
+      },
+
+      pelayanan: {
+        title: s("pelayanan_title") || defaultSeo.church.pelayanan.title,
+        description:
+          s("pelayanan_description") || defaultSeo.church.pelayanan.description,
+        buttonLabel:
+          s("pelayanan_button_label") ||
+          defaultSeo.church.pelayanan.buttonLabel,
+        whatsappMessage:
+          s("pelayanan_whatsapp_message") ||
+          defaultSeo.church.pelayanan.whatsappMessage,
       },
     },
-  }
+  };
 }
 
 const SeoContext = createContext(defaultSeo)

@@ -35,11 +35,15 @@ export function formatShortDate(value) {
 }
 
 export function formatLongDate(value) {
-  const d = value instanceof Date ? value : parseKey(value)
-  return d.toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  if (!value) return "";
+  const key = isoToKey(value); // aman untuk "2026-09-20" maupun "2026-09-20T00:00:00Z"
+  const [y, m, d] = key.split("-").map(Number);
+  const date = new Date(y, m - 1, d); // pakai konstruktor lokal, hindari geser timezone
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }

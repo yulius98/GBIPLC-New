@@ -85,7 +85,7 @@ export default function AboutPage() {
             <div>
               <span className="section-head__eyebrow">Siapa Kami</span>
               <h2 className="section-title">
-                Sebuah Keluarga Iman di Jantung Yogyakarta
+                Sebuah Keluarga Iman di Yogyakarta
               </h2>
             </div>
           </div>

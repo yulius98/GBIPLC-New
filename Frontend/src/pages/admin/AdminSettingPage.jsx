@@ -2,30 +2,35 @@ import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../../api/client'
 
 const EMPTY_FORM = {
-  site_name: '',
-  site_name_short: '',
-  site_url: '',
-  locale: '',
-  default_title: '',
-  default_description: '',
-  keywords: '',
-  church_name: '',
-  church_alternate_name: '',
-  church_description: '',
-  telephone: '',
-  whatsapp: '',
-  street_address: '',
-  address_locality: '',
-  address_region: '',
-  postal_code: '',
-  address_country: '',
-  service_name: '',
-  day_of_week: '',
-  opens: '',
-  closes: '',
-  instagram: '',
-  facebook: '',
-}
+  site_name: "",
+  site_name_short: "",
+  site_url: "",
+  locale: "",
+  default_title: "",
+  default_description: "",
+  keywords: "",
+  church_name: "",
+  church_alternate_name: "",
+  church_description: "",
+  telephone: "",
+  whatsapp: "",
+  street_address: "",
+  address_locality: "",
+  address_region: "",
+  postal_code: "",
+  address_country: "",
+  service_name: "",
+  day_of_week: "",
+  opens: "",
+  closes: "",
+  instagram: "",
+  facebook: "",
+  // Pelayanan / Konsultasi
+  pelayanan_title: "",
+  pelayanan_description: "",
+  pelayanan_button_label: "",
+  pelayanan_whatsapp_message: "",
+};
 
 function Field({ name, label, type = 'text', form, onChange, placeholder, rows, hint }) {
   return (
@@ -131,11 +136,38 @@ export default function AdminSettingPage() {
         <section className="card settings-section">
           <h3 className="settings-section__title">Umum</h3>
           <div className="settings-section__grid">
-            <Field name="site_name" label="Nama Situs" form={form} onChange={handleChange} />
-            <Field name="site_name_short" label="Nama Singkat" form={form} onChange={handleChange} />
-            <Field name="site_url" label="URL Situs" form={form} onChange={handleChange} placeholder="https://…" />
-            <Field name="locale" label="Locale" form={form} onChange={handleChange} placeholder="id_ID" />
-            <Field name="default_title" label="Judul Default" form={form} onChange={handleChange} />
+            <Field
+              name="site_name"
+              label="Nama Situs"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="site_name_short"
+              label="Nama Singkat"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="site_url"
+              label="URL Situs"
+              form={form}
+              onChange={handleChange}
+              placeholder="https://…"
+            />
+            <Field
+              name="locale"
+              label="Locale"
+              form={form}
+              onChange={handleChange}
+              placeholder="id_ID"
+            />
+            <Field
+              name="default_title"
+              label="Judul Default"
+              form={form}
+              onChange={handleChange}
+            />
             <Field
               name="default_description"
               label="Deskripsi Default"
@@ -161,11 +193,22 @@ export default function AdminSettingPage() {
           <div className="settings-section__grid">
             <div className="field">
               <span>Gambar OG</span>
-              <input type="file" name="og_image" accept="image/*" onChange={handleFile} />
+              <input
+                type="file"
+                name="og_image"
+                accept="image/*"
+                onChange={handleFile}
+              />
               {ogImagePreview ? (
-                <img className="settings-section__og" src={ogImagePreview} alt="Preview OG" />
+                <img
+                  className="settings-section__og"
+                  src={ogImagePreview}
+                  alt="Preview OG"
+                />
               ) : (
-                <small className="muted">Belum ada gambar. Kosongkan untuk memakai favicon.svg.</small>
+                <small className="muted">
+                  Belum ada gambar. Kosongkan untuk memakai favicon.svg.
+                </small>
               )}
             </div>
           </div>
@@ -174,8 +217,18 @@ export default function AdminSettingPage() {
         <section className="card settings-section">
           <h3 className="settings-section__title">Gereja</h3>
           <div className="settings-section__grid">
-            <Field name="church_name" label="Nama Gereja" form={form} onChange={handleChange} />
-            <Field name="church_alternate_name" label="Nama Alternatif" form={form} onChange={handleChange} />
+            <Field
+              name="church_name"
+              label="Nama Gereja"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="church_alternate_name"
+              label="Nama Alternatif"
+              form={form}
+              onChange={handleChange}
+            />
             <Field
               name="church_description"
               label="Deskripsi Gereja"
@@ -184,40 +237,149 @@ export default function AdminSettingPage() {
               form={form}
               onChange={handleChange}
             />
-            <Field name="telephone" label="Telepon" form={form} onChange={handleChange} />
-            <Field name="whatsapp" label="WhatsApp" form={form} onChange={handleChange} hint="Tanpa tanda +, contoh: 62853…" />
-            <Field name="street_address" label="Alamat Jalan" form={form} onChange={handleChange} />
-            <Field name="address_locality" label="Kota" form={form} onChange={handleChange} />
-            <Field name="address_region" label="Provinsi" form={form} onChange={handleChange} />
-            <Field name="postal_code" label="Kode Pos" form={form} onChange={handleChange} />
-            <Field name="address_country" label="Negara" form={form} onChange={handleChange} placeholder="ID" />
+            <Field
+              name="telephone"
+              label="Telepon"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="whatsapp"
+              label="WhatsApp"
+              form={form}
+              onChange={handleChange}
+              hint="Tanpa tanda +, contoh: 62853…"
+            />
+            <Field
+              name="street_address"
+              label="Alamat Jalan"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="address_locality"
+              label="Kota"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="address_region"
+              label="Provinsi"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="postal_code"
+              label="Kode Pos"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="address_country"
+              label="Negara"
+              form={form}
+              onChange={handleChange}
+              placeholder="ID"
+            />
           </div>
         </section>
 
         <section className="card settings-section">
           <h3 className="settings-section__title">Jadwal Ibadah</h3>
           <div className="settings-section__grid">
-            <Field name="service_name" label="Nama Ibadah" form={form} onChange={handleChange} />
-            <Field name="day_of_week" label="Hari" form={form} onChange={handleChange} placeholder="Sunday" />
-            <Field name="opens" label="Mulai" form={form} onChange={handleChange} placeholder="10:00" />
-            <Field name="closes" label="Selesai" form={form} onChange={handleChange} placeholder="12:00" />
+            <Field
+              name="service_name"
+              label="Nama Ibadah"
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="day_of_week"
+              label="Hari"
+              form={form}
+              onChange={handleChange}
+              placeholder="Sunday"
+            />
+            <Field
+              name="opens"
+              label="Mulai"
+              form={form}
+              onChange={handleChange}
+              placeholder="10:00"
+            />
+            <Field
+              name="closes"
+              label="Selesai"
+              form={form}
+              onChange={handleChange}
+              placeholder="12:00"
+            />
+          </div>
+        </section>
+
+        <section className="card settings-section">
+          <h3 className="settings-section__title">Pelayanan / Konsultasi</h3>
+          <div className="settings-section__grid">
+            <Field
+              name="pelayanan_title"
+              label="Judul"
+              form={form}
+              onChange={handleChange}
+              placeholder="Konsultasi / Pelayanan"
+            />
+            <Field
+              name="pelayanan_description"
+              label="Deskripsi"
+              type="textarea"
+              rows={4}
+              form={form}
+              onChange={handleChange}
+            />
+            <Field
+              name="pelayanan_button_label"
+              label="Teks Tombol"
+              form={form}
+              onChange={handleChange}
+              placeholder="Kirim Pesan"
+            />
+            <Field
+              name="pelayanan_whatsapp_message"
+              label="Pesan WhatsApp Otomatis"
+              type="textarea"
+              rows={3}
+              form={form}
+              onChange={handleChange}
+              hint="Pesan awal yang terisi otomatis saat pengunjung menekan tombol."
+            />
           </div>
         </section>
 
         <section className="card settings-section">
           <h3 className="settings-section__title">Sosial Media</h3>
           <div className="settings-section__grid">
-            <Field name="instagram" label="Instagram" form={form} onChange={handleChange} placeholder="https://instagram.com/…" />
-            <Field name="facebook" label="Facebook" form={form} onChange={handleChange} placeholder="https://facebook.com/…" />
+            <Field
+              name="instagram"
+              label="Instagram"
+              form={form}
+              onChange={handleChange}
+              placeholder="https://instagram.com/…"
+            />
+            <Field
+              name="facebook"
+              label="Facebook"
+              form={form}
+              onChange={handleChange}
+              placeholder="https://facebook.com/…"
+            />
           </div>
         </section>
 
         <div className="admin-form__actions">
           <button type="submit" className="btn btn--primary" disabled={saving}>
-            {saving ? 'Menyimpan…' : 'Simpan'}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>
     </div>
-  )
+  );
 }

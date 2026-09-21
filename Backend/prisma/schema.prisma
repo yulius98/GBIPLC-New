@@ -281,6 +281,10 @@ model TblSeoSetting {
   closes                String?
   instagram             String?
   facebook              String?
+  pelayanan_title            String?
+  pelayanan_description      String?
+  pelayanan_button_label     String?
+  pelayanan_whatsapp_message String?
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 
