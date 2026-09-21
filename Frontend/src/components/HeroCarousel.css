@@ -1,0 +1,170 @@
+/* ===== Hero carousel =====
+   Layar besar (>= 768px): teks di kiri, gambar di kanan dengan jarak
+   atas/bawah/kanan dan sudut membulat.
+   HP (< 768px): hanya gambar. */
+
+.hero-carousel {
+  --hc-bg: var(--navy, #0f2338);
+  --hc-gold: var(--gold, #c8a45d);
+
+  --hc-height: clamp(520px, 78vh, 760px);
+  /* padding atas + bawah slide dan area titik navigasi */
+  --hc-chrome: 130px;
+
+  display: flex;
+  flex-direction: column;
+  height: var(--hc-height);
+  background: var(--hc-bg);
+  overflow: hidden;
+}
+
+.hero-carousel__viewport {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Semua slide bertumpuk di sel yang sama; hanya yang aktif terlihat */
+.hero-carousel__slide {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: clamp(24px, 4vw, 64px);
+  padding:
+    clamp(20px, 3vw, 40px)
+    clamp(24px, 5vw, 72px)
+    clamp(12px, 2vw, 24px)
+    clamp(32px, 6vw, 96px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+.hero-carousel__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ---- Teks (kiri) ---- */
+.hero-carousel__text {
+  align-self: center;
+  color: #fff;
+}
+
+.hero-carousel__title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
+  line-height: 1.15;
+  color: #fff;
+}
+
+.hero-carousel__title::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  margin-top: 1rem;
+  background: var(--hc-gold);
+}
+
+.hero-carousel__desc {
+  margin: 0;
+  max-width: 42ch;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: pre-line; /* pertahankan baris baru dari deskripsi */
+}
+
+/* ---- Gambar (kanan) ---- */
+.hero-carousel__media {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 0;
+}
+
+.hero-carousel__media img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(var(--hc-height) - var(--hc-chrome));
+  width: auto;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+/* ---- Titik navigasi ---- */
+.hero-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 20px;
+}
+
+.hero-carousel__dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.hero-carousel__dot.is-active {
+  width: 28px;
+  background: var(--hc-gold);
+}
+
+.hero-carousel__dot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* ===== HP: hanya gambar ===== */
+@media (max-width: 767px) {
+  .hero-carousel {
+    height: auto;
+  }
+
+  .hero-carousel__viewport {
+    flex: none;
+  }
+
+  .hero-carousel__slide {
+    display: block;
+    padding: 16px 16px 0;
+  }
+
+  .hero-carousel__text {
+    display: none;
+  }
+
+  .hero-carousel__media {
+    justify-content: center;
+  }
+
+  .hero-carousel__media img {
+    width: 100%;
+    max-height: none;
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-carousel__dots {
+    padding: 14px 0 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel__slide,
+  .hero-carousel__dot {
+    transition: none;
+  }
+}

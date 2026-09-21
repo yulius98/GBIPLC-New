@@ -3,6 +3,7 @@ import api, { MEDIA_URL } from '../api/client'
 import { useSeo } from '../context/SeoContext'
 import { useSEO } from '../utils/seo'
 import { buildChurchJsonLd } from "../utils/churchJsonLd";
+import HeroCarousel from "../components/HeroCarousel";
 
 function formatDate(value) {
   return new Date(value).toLocaleDateString('id-ID', {
@@ -14,7 +15,7 @@ function formatDate(value) {
 }
 
 export default function LandingPage() {
-  const seo = useSeo()
+  const seo = useSeo();
 
   useSEO({
     path: "/",
@@ -24,81 +25,65 @@ export default function LandingPage() {
     jsonLd: buildChurchJsonLd(seo),
   });
 
-  const [carousel, setCarousel] = useState([])
-  const [pastorNote, setPastorNote] = useState(null)
-  const [events, setEvents] = useState([])
-  const [error, setError] = useState('')
-  const [slide, setSlide] = useState(0)
+  const [carousel, setCarousel] = useState([]);
+  const [pastorNote, setPastorNote] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState("");
+  // const [slide, setSlide] = useState(0)
 
   useEffect(() => {
     api
-      .get('/carousel')
+      .get("/carousel")
       .then((res) => setCarousel(res.data.data || []))
-      .catch(() => {})
+      .catch(() => {});
 
     api
-      .get('/event')
+      .get("/event")
       .then((res) => setEvents(res.data.data || []))
-      .catch(() => {})
+      .catch(() => {});
 
     api
-      .get('/pastornote')
+      .get("/pastornote")
       .then((res) => setPastorNote(res.data.data || null))
       .catch((err) => {
         if (err.response?.status !== 404) {
-          setError(err.response?.data?.message || 'Gagal memuat saat teduh.')
+          setError(err.response?.data?.message || "Gagal memuat saat teduh.");
         }
-      })
-  }, [])
+      });
+  }, []);
 
   useEffect(() => {
-    if (carousel.length <= 1) return
-    const timer = setInterval(() => setSlide((s) => (s + 1) % carousel.length), 5000)
-    return () => clearInterval(timer)
-  }, [carousel.length])
+    if (carousel.length <= 1) return;
+    const timer = setInterval(
+      () => setSlide((s) => (s + 1) % carousel.length),
+      5000,
+    );
+    return () => clearInterval(timer);
+  }, [carousel.length]);
 
   return (
     <div className="landing">
+      <h1 className="visually-hidden">{seo.siteName}</h1>
       {/* Section 1: Carousel (hero full-width) */}
-      <section className="hero-slider hero-slider--landing">
-        {carousel.length > 0 ? (
-          carousel.map((item, i) => (
-            <div
-              key={item.id}
-              className={`slide ${i === slide ? "slide--active" : ""}`}
-            >
-              {item.filename && (
-                <img
-                  src={`${MEDIA_URL}/uploads/${item.filename}`}
-                  alt={item.tema}
-                />
-              )}
-              <div className="slide__caption">
-                <h1>{item.tema}</h1>
-                {item.description && <p>{item.description}</p>}
-              </div>
-            </div>
-          ))
-        ) : (
+      {carousel.length > 0 ? (
+        <HeroCarousel
+          slides={carousel
+            .filter((item) => item.filename)
+            .map((item) => ({
+              id: item.id,
+              title: item.tema,
+              description: item.description,
+              image: `${MEDIA_URL}/uploads/${item.filename}`,
+            }))}
+        />
+      ) : (
+        <section className="hero-slider hero-slider--landing">
           <div className="slide slide--active slide__caption">
             <h1>Selamat datang di GBI PLC</h1>
             <p>Gereja Bethel Indonesia Philadelphia Life Center</p>
           </div>
-        )}
-        {carousel.length > 1 && (
-          <div className="slider__dots">
-            {carousel.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`slider__dot ${i === slide ? "slider__dot--active" : ""}`}
-                aria-label={`Slide ${i + 1}`}
-                onClick={() => setSlide(i)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <div className="container container--wide">
         {error && <div className="alert alert--error">{error}</div>}
