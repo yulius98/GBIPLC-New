@@ -4,12 +4,16 @@ const dateString = z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
   message: 'Format tanggal tidak valid',
 });
 
+const phoneString = z
+  .string({ message: 'No HP wajib diisi' })
+  .regex(/^\d+$/, 'No HP hanya boleh berisi angka');
+
 const registerSchema = z
   .object({
     name: z.string({ message: 'Nama wajib diisi' }).min(1, 'Nama wajib diisi'),
     email: z.string({ message: 'Email wajib diisi' }).email('Format email tidak valid'),
     alamat: z.string({ message: 'Alamat wajib diisi' }).min(1, 'Alamat wajib diisi'),
-    no_HP: z.string({ message: 'No HP wajib diisi' }).min(1, 'No HP wajib diisi'),
+    no_HP: phoneString,
     gol_darah: z.string({ message: 'Golongan darah wajib diisi' }).min(1, 'Golongan darah wajib diisi'),
     tgl_lahir: z.string({ message: 'Tanggal lahir wajib diisi' }).min(1, 'Tanggal lahir wajib diisi'),
     password: z
@@ -28,7 +32,7 @@ const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi').optional(),
   email: z.string().email('Format email tidak valid').optional(),
   alamat: z.string().min(1, 'Alamat wajib diisi').optional(),
-  no_HP: z.string().min(1, 'No HP wajib diisi').optional(),
+  no_HP: phoneString.optional(),
   gol_darah: z.string().min(1, 'Golongan darah wajib diisi').optional(),
   tgl_lahir: dateString.optional(),
   facebook: z.string().optional().nullable(),

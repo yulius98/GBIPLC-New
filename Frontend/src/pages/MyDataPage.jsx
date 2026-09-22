@@ -7,6 +7,8 @@ import { toWebp } from '../utils/image'
 
 const GOL_DARAH = ['A', 'B', 'AB', 'O']
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 function toDateInput(value) {
   if (!value) return ''
   const d = new Date(value)
@@ -76,8 +78,15 @@ export default function MyDataPage() {
   }, [])
 
   function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-    setFieldErrors((fe) => ({ ...fe, [e.target.name]: undefined }))
+    const { name, value } = e.target
+    // No HP hanya boleh berisi angka: tolak huruf/special karakter saat diketik
+    const next = name === 'no_HP' ? value.replace(/\D/g, '') : value
+    setForm((f) => ({ ...f, [name]: next }))
+    if (name === 'email' && next.includes('@') && !EMAIL_RE.test(next)) {
+      setFieldErrors((fe) => ({ ...fe, email: ['Format email tidak valid'] }))
+    } else {
+      setFieldErrors((fe) => ({ ...fe, [name]: undefined }))
+    }
   }
 
   function handleFile(e) {
@@ -94,6 +103,16 @@ export default function MyDataPage() {
     setError('')
     setFieldErrors({})
     setSuccess(false)
+
+    if ((form.email || '') && !EMAIL_RE.test(form.email)) {
+      setFieldErrors({ email: ['Format email tidak valid'] })
+      return
+    }
+    if ((form.no_HP || '') && !/^\d+$/.test(form.no_HP)) {
+      setFieldErrors({ no_HP: ['No HP hanya boleh berisi angka'] })
+      return
+    }
+
     setSubmitting(true)
 
     const body = new FormData()
@@ -205,6 +224,8 @@ export default function MyDataPage() {
                   value={form.no_HP}
                   onChange={handleChange}
                   placeholder="08xxxxxxxxxx"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   required
                 />
                 {fieldErrors.no_HP && <small className="field__error">{fieldErrors.no_HP[0]}</small>}

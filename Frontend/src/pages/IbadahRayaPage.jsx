@@ -17,6 +17,28 @@ function isPdf(url) {
   return /\.pdf$/i.test(url || '')
 }
 
+// Deteksi HP/tablet (Android & iOS) — iframe PDF tidak didukung di mobile.
+function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false
+  return /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|BlackBerry|Windows Phone|Mobile/i.test(
+    navigator.userAgent,
+  )
+}
+
+// Ubah URL absolut backend (APP_URL/uploads/...) menjadi path relatif yang
+// dilewati proxy frontend (Vite saat dev, nginx saat produksi), sehingga
+// tetap valid di perangkat selain localhost.
+function toAppUrl(url) {
+  if (!url) return ''
+  try {
+    const parsed = new URL(url, window.location.origin)
+    if (parsed.origin === window.location.origin) return url
+    return `${parsed.pathname}${parsed.search}`
+  } catch {
+    return url
+  }
+}
+
 function uniqueDates(items, field) {
   return [...new Set(items.map((x) => isoToKey(x[field])))]
     .sort()
@@ -30,7 +52,9 @@ export default function IbadahRayaPage() {
   const [materiDate, setMateriDate] = useState('')
   const [ibadahDate, setIbadahDate] = useState('')
   const [preview, setPreview] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState('')
   const [error, setError] = useState('')
+  const isMobile = isMobileDevice()
 
   useEffect(() => {
     Promise.all([
@@ -92,10 +116,15 @@ export default function IbadahRayaPage() {
   )
 
   function handlePreview(item) {
-    if (isPdf(item.materi_kotbah_url)) {
+    const url = toAppUrl(item.materi_kotbah_url)
+    if (isPdf(item.materi_kotbah_url) && !isMobile) {
+      // Desktop: tampilkan preview PDF dalam modal.
       setPreview(item)
+      setPreviewUrl(url)
     } else {
-      window.open(item.materi_kotbah_url, '_blank', 'noopener')
+      // Mobile: iframe tidak merender PDF, buka di tab baru agar viewer
+      // PDF bawaan (Android/iOS) yang menampilkan file.
+      window.open(url, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -279,7 +308,12 @@ export default function IbadahRayaPage() {
               </button>
             </div>
             <div className="modal__body">
-              <iframe src={preview.materi_kotbah_url} title="Pratinjau materi kotbah" />
+              <div className="modal__body-actions">
+                <a href={previewUrl} target="_blank" rel="noreferrer" className="btn btn--primary">
+                  Buka di tab baru
+                </a>
+              </div>
+              <iframe src={previewUrl} title="Pratinjau materi kotbah" />
             </div>
           </div>
         </div>

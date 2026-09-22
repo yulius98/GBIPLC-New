@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import { useSEO } from '../utils/seo'
 
@@ -11,9 +11,11 @@ export default function ResetPasswordPage() {
     noindex: true,
   })
 
-  const token = window.location.pathname.split('/').pop()
+  const { token } = useParams()
+  const [searchParams] = useSearchParams()
+  const email = searchParams.get('email') || ''
 
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' })
+  const [form, setForm] = useState({ password: '', confirmPassword: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -39,7 +41,7 @@ export default function ResetPasswordPage() {
     setSubmitting(true)
     try {
       await api.post('/reset-password', {
-        email: form.email,
+        email,
         token,
         password: form.password,
       })
@@ -71,7 +73,7 @@ export default function ResetPasswordPage() {
     )
   }
 
-  if (!token) {
+  if (!token || !email) {
     return <Navigate to="/login" replace />
   }
 
@@ -80,20 +82,10 @@ export default function ResetPasswordPage() {
       <form className="auth-card" onSubmit={handleSubmit}>
         <div className="auth-card__brand">GBI</div>
         <h1>Reset Password</h1>
-        <p className="muted auth-card__sub">Buat password baru untuk akun Anda.</p>
+        <p className="muted auth-card__sub">
+          Buat password baru untuk akun <strong>{email}</strong>.
+        </p>
         {error && <div className="alert alert--error">{error}</div>}
-        <label className="field">
-          <span>Email</span>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="nama@email.com"
-            required
-            autoFocus
-          />
-        </label>
         <label className="field">
           <span>Password Baru *</span>
           <div className="field__input-wrap">

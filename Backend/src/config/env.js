@@ -7,6 +7,7 @@ const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number.parseInt(process.env.PORT || '8000', 10),
   appUrl: process.env.APP_URL || 'http://localhost:8000',
+  frontendUrl: process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:8000',
 
   databaseUrl: process.env.DATABASE_URL,
 
