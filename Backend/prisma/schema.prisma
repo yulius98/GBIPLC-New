@@ -303,3 +303,15 @@ model Notofication {
 
   @@map("notofications")
 }
+
+model TblServiceSchedule {
+  id           Int      @id @default(autoincrement())
+  service_name String
+  day_of_week  String
+  opens        String
+  closes       String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("tbl_service_schedules")
+}

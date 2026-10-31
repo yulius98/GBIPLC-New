@@ -72,6 +72,13 @@ const materiKotbahController = createCrudController({
   transform: (d) => ({ ...d, tgl_kotbah: d.tgl_kotbah ? new Date(d.tgl_kotbah) : undefined }),
 });
 
+const serviceScheduleController = createCrudController({
+  model: prisma.tblServiceSchedule,
+  orderBy: { id: 'asc' },
+  allowedFields: ['service_name', 'day_of_week', 'opens', 'closes'],
+  resourceName: 'Jadwal Ibadah',
+});
+
 // ---------- Kegiatan (event) ----------
 router.get('/event', ...auth, eventController.list);
 router.post('/event', ...auth, uploadFields([{ name: 'filename', maxCount: 1 }]), eventController.create);
@@ -110,6 +117,13 @@ router.delete('/materi-kotbah/:id', ...auth, materiKotbahController.remove);
 // ---------- Setting SEO ----------
 router.get('/seo', ...auth, settingsController.getSeo);
 router.put('/seo', ...auth, uploadFields([{ name: 'og_image', maxCount: 1 }]), settingsController.updateSeo);
+
+// ---------- Jadwal Ibadah (setting, multi-row) ----------
+router.get('/schedule', ...auth, serviceScheduleController.list);
+router.post('/schedule', ...auth, serviceScheduleController.create);
+router.get('/schedule/:id', ...auth, serviceScheduleController.get);
+router.put('/schedule/:id', ...auth, serviceScheduleController.update);
+router.delete('/schedule/:id', ...auth, serviceScheduleController.remove);
 
 // ---------- Bacaan Alkitab (reading schedule 298 hari) ----------
 router.get('/reading', ...auth, readingScheduleController.list);

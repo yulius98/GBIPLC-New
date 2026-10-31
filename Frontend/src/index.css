@@ -2128,6 +2128,27 @@ a {
   display: block;
 }
 
+.settings-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-section__head .settings-section__title {
+  margin: 0;
+}
+
+.settings-section__head .btn {
+  gap: 0.4rem;
+}
+
+.admin-table__actions .btn--icon {
+  padding: 0.35rem 0.55rem;
+  line-height: 1;
+}
+
 .settings-section {
   margin-bottom: 1.25rem;
   padding: 1.25rem 1.5rem;

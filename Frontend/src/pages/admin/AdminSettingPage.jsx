@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../../api/client'
+import ServiceScheduleSection from '../../components/ServiceScheduleSection'
 
 const EMPTY_FORM = {
   site_name: "",
@@ -19,10 +20,6 @@ const EMPTY_FORM = {
   address_region: "",
   postal_code: "",
   address_country: "",
-  service_name: "",
-  day_of_week: "",
-  opens: "",
-  closes: "",
   instagram: "",
   facebook: "",
   // Pelayanan / Konsultasi
@@ -284,38 +281,7 @@ export default function AdminSettingPage() {
           </div>
         </section>
 
-        <section className="card settings-section">
-          <h3 className="settings-section__title">Jadwal Ibadah</h3>
-          <div className="settings-section__grid">
-            <Field
-              name="service_name"
-              label="Nama Ibadah"
-              form={form}
-              onChange={handleChange}
-            />
-            <Field
-              name="day_of_week"
-              label="Hari"
-              form={form}
-              onChange={handleChange}
-              placeholder="Sunday"
-            />
-            <Field
-              name="opens"
-              label="Mulai"
-              form={form}
-              onChange={handleChange}
-              placeholder="10:00"
-            />
-            <Field
-              name="closes"
-              label="Selesai"
-              form={form}
-              onChange={handleChange}
-              placeholder="12:00"
-            />
-          </div>
-        </section>
+        <ServiceScheduleSection />
 
         <section className="card settings-section">
           <h3 className="settings-section__title">Pelayanan / Konsultasi</h3>
