@@ -1,5 +1,6 @@
 import AppError from './AppError.js';
 import fileUploadService from '../services/fileUpload.service.js';
+import resolveRowId from './publicId.js';
 /**
  * Factory controller CRUD generik.
  *
@@ -117,7 +118,10 @@ function createCrudController({
     },
 
     async get(req, res) {
-      const item = await model.findUnique({ where: { id: Number(req.params.id) } });
+      const selector = resolveRowId(req.params.id);
+      if (!selector) throw new AppError(`${resourceName} tidak ditemukan`, 404);
+
+      const item = await model.findUnique({ where: selector });
       if (!item) throw new AppError(`${resourceName} tidak ditemukan`, 404);
       return res.json({
         status: true,
@@ -136,13 +140,15 @@ function createCrudController({
     },
 
     async update(req, res) {
-      const id = Number(req.params.id);
-      const existing = await model.findUnique({ where: { id } });
+      const selector = resolveRowId(req.params.id);
+      if (!selector) throw new AppError(`${resourceName} tidak ditemukan`, 404);
+
+      const existing = await model.findUnique({ where: selector });
       if (!existing) throw new AppError(`${resourceName} tidak ditemukan`, 404);
       req.resource = { old: existing };
 
       const item = await model.update({
-        where: { id },
+        where: { id: existing.id },
         data: prepare(req),
       });
       return res.json({
@@ -153,15 +159,17 @@ function createCrudController({
     },
 
     async remove(req, res) {
-      const id = Number(req.params.id);
-      const existing = await model.findUnique({ where: { id } });
+      const selector = resolveRowId(req.params.id);
+      if (!selector) throw new AppError(`${resourceName} tidak ditemukan`, 404);
+
+      const existing = await model.findUnique({ where: selector });
       if (!existing) throw new AppError(`${resourceName} tidak ditemukan`, 404);
 
       // Soft delete jika model punya kolom deleted_at, selain itu hard delete
       if (model.fields.deleted_at) {
-        await model.update({ where: { id }, data: { deleted_at: new Date() } });
+        await model.update({ where: { id: existing.id }, data: { deleted_at: new Date() } });
       } else {
-        await model.delete({ where: { id } });
+        await model.delete({ where: { id: existing.id } });
       }
       return res.json({
         status: true,

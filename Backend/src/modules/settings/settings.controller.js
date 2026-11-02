@@ -1,39 +1,21 @@
 import prisma from '../../utils/prisma.js';
 import apiResponse from '../../utils/apiResponse.js';
 import fileUploadService from '../../services/fileUpload.service.js';
+import DEFAULT_SEO from './seoDefaults.js';
 
 /**
- * Nilai default SEO (single-row, id=1).
+ * Nilai default Data Gembala (singleton, id=1).
+ * Dipakai saat baris belum pernah dibuat — sama dengan seed migrasi.
+ */
+const DEFAULT_GEMBALA = {
+  nama_gembala: 'Pdm. Jimmy Sugiarto',
+  wakil_gembala: 'Pdm. Freddy Budiman',
+};
+
+/**
+ * Nilai default SEO (single-row, id=1). Lihat ./seoDefaults.js.
  * Dipakai saat baris setting belum pernah dibuat.
  */
-const DEFAULT_SEO = {
-  site_name: 'GBI Philadelphia Life Center',
-  site_name_short: 'GBI PLC',
-  site_url: 'https://philadelphialifecenter.com',
-  locale: 'id_ID',
-  default_title: 'GBI Philadelphia Life Center — Gereja di Yogyakarta',
-  default_description:
-    'GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di Yogyakarta. Ibadah Raya setiap Minggu pukul 10.00 WIB, Saat Teduh harian, materi kotbah, Youth Ministry, dan Life Group.',
-  keywords:
-    'gereja, GBI, gereja di jogja, gereja di Yogyakarta, gereja di sleman, kotbah, ibadah raya, materi kotbah, saat teduh, GBI PLC, philadelphia life center',
-  church_name: 'GBI Philadelphia Life Center',
-  church_alternate_name: 'GBI PLC',
-  church_description:
-    'Gereja Bethel Indonesia (GBI) Philadelphia Life Center di Yogyakarta yang melayani Ibadah Raya, Youth Ministry, dan Life Group.',
-  telephone: '+6285336618852',
-  whatsapp: '6285336618852',
-  street_address: 'Jl. Babarsari No.45, Janti, Caturtunggal, Kec. Depok',
-  address_locality: 'Sleman',
-  address_region: 'Daerah Istimewa Yogyakarta',
-  postal_code: '55281',
-  address_country: 'ID',
-  service_name: 'Ibadah Raya',
-  day_of_week: 'Sunday',
-  opens: '10:00',
-  closes: '12:00',
-  instagram: '',
-  facebook: '',
-};
 
 const SEO_FIELDS = [
   'site_name',
@@ -126,4 +108,131 @@ async function updateSeo(req, res) {
   });
 }
 
-export default { getSeo, updateSeo };
+/**
+ * GET /api/schedule
+ * Daftar jadwal ibadah (multi-row, tabel tbl_service_schedules) untuk
+ * halaman publik: footer PublicLayout, halaman Kontak, dll.
+ * Tanpa autentikasi (read-only, hanya mengembalikan data Setting).
+ */
+async function getSchedules(req, res) {
+  const data = await prisma.tblServiceSchedule.findMany({
+    orderBy: { id: 'asc' },
+  });
+
+  return apiResponse.success(res, {
+    message: 'Data ditemukan',
+    data,
+  });
+}
+
+/**
+ * GET /api/gembala dan GET /api/admin/gembala
+ * Data gembala (singleton path row) untuk footer publik & form admin.
+ */
+async function getGembala(req, res) {
+  let data = await prisma.tblDataGembala.findUnique({ where: { id: 1 } });
+  if (!data) {
+    // Idempotent fallback: garantikan baris ada (sama pola ensureSeoRow)
+    data = await prisma.tblDataGembala.create({ data: { ...DEFAULT_GEMBALA } });
+  }
+
+  return apiResponse.success(res, {
+    message: 'Data ditemukan',
+    data,
+  });
+}
+
+/**
+ * PUT /api/admin/gembala
+ * Perbarui data gembala (singleton, hanya field nama yang diubah).
+ */
+async function updateGembala(req, res) {
+  const body = req.body || {};
+  const data = {};
+  for (const field of ['nama_gembala', 'wakil_gembala']) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      data[field] = String(body[field] ?? '').trim();
+    }
+  }
+
+  if (!data.nama_gembala) {
+    return apiResponse.error(res, {
+      message: 'Nama gembala wajib diisi',
+      statusCode: 422,
+    });
+  }
+
+  const row = await prisma.tblDataGembala.upsert({
+    where: { id: 1 },
+    update: data,
+    create: { ...DEFAULT_GEMBALA, ...data },
+  });
+
+  return apiResponse.success(res, {
+    message: 'Data gembala berhasil disimpan',
+    data: row,
+  });
+}
+
+/**
+ * GET /api/tentang dan GET /api/admin/tentang
+ * Konten halaman Tentang: singleton text + daftar kartu pelayanan.
+ */
+async function getTentang(req, res) {
+  const tentang = await prisma.tblTentangKami.findUnique({ where: { id: 1 } });
+  const pelayanan = await prisma.tblTentangKamiPelayanan.findMany({
+    orderBy: { id: 'asc' },
+  });
+
+  return apiResponse.success(res, {
+    message: 'Data ditemukan',
+    data: { tentang, pelayanan },
+  });
+}
+
+/**
+ * PUT /api/admin/tentang
+ * Perbarui konten teks halaman Tentang (singleton, hanya field yang dikirim).
+ */
+async function updateTentang(req, res) {
+  const body = req.body || {};
+  const fields = ['judul', 'sub_judul', 'lede', 'paragraf_1', 'paragraf_2'];
+  const data = {};
+  for (const field of fields) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      data[field] = String(body[field] ?? '').trim();
+    }
+  }
+
+  if (!data.judul && !data.sub_judul && !data.lede && !data.paragraf_1 && !data.paragraf_2) {
+    return apiResponse.error(res, {
+      message: 'Minimal satu field wajib diisi',
+      statusCode: 422,
+    });
+  }
+
+  await prisma.tblTentangKami.upsert({
+    where: { id: 1 },
+    update: data,
+    // Bila baris belum ada, nilai default dari migrasi dipakai untuk field lain
+    create: {
+      judul: data.judul || 'GBI Philadelphia Life Center',
+      sub_judul: data.sub_judul || 'Gereja Bethel di Yogyakarta',
+      lede: data.lede || '',
+      paragraf_1: data.paragraf_1 || '',
+      paragraf_2: data.paragraf_2 || '',
+    },
+  });
+
+  const tentang = await prisma.tblTentangKami.findUnique({ where: { id: 1 } });
+  const pelayanan = await prisma.tblTentangKamiPelayanan.findMany({
+    orderBy: { id: 'asc' },
+  });
+
+  return apiResponse.success(res, {
+    message: 'Konten Tentang Kami berhasil disimpan',
+    data: { tentang, pelayanan },
+  });
+}
+
+export default { getSeo, updateSeo, getSchedules, getGembala, updateGembala, getTentang, updateTentang };

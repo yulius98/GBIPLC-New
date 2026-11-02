@@ -118,6 +118,10 @@ router.delete('/materi-kotbah/:id', ...auth, materiKotbahController.remove);
 router.get('/seo', ...auth, settingsController.getSeo);
 router.put('/seo', ...auth, uploadFields([{ name: 'og_image', maxCount: 1 }]), settingsController.updateSeo);
 
+// ---------- Data Gembala (setting, singleton) ----------
+router.get('/gembala', ...auth, settingsController.getGembala);
+router.put('/gembala', ...auth, settingsController.updateGembala);
+
 // ---------- Jadwal Ibadah (setting, multi-row) ----------
 router.get('/schedule', ...auth, serviceScheduleController.list);
 router.post('/schedule', ...auth, serviceScheduleController.create);

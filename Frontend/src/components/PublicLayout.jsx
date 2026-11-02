@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useSeo } from '../context/SeoContext'
+import useServiceSchedules from '../hooks/useServiceSchedules'
+import useDataGembala from '../hooks/useDataGembala'
 
 export default function PublicLayout() {
   const { user, logout } = useAuth()
@@ -9,6 +11,8 @@ export default function PublicLayout() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { schedules: scheduleItems } = useServiceSchedules()
+  const { gembala } = useDataGembala()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -162,25 +166,24 @@ export default function PublicLayout() {
             <div>
               <p className="footer__title">Jadwal Ibadah</p>
               <div className="footer__links">
-                <span className="footer__text">
-                  <strong>Ibadah Raya:</strong> Minggu jam 10:00
-                </span>
-                <span className="footer__text">
-                  <strong>Youth:</strong> Sabtu jam 16:00
-                </span>
-                <span className="footer__text">
-                  <strong>Sekolah Minggu:</strong> Minggu jam 10:00
-                </span>
+                {scheduleItems.map((item) => (
+                  <span
+                    key={`${item.name}-${item.day}-${item.time}`}
+                    className="footer__text"
+                  >
+                    <strong>{item.name}:</strong> {item.day} jam {item.time}
+                  </span>
+                ))}
               </div>
             </div>
             <div>
               <p className="footer__title">Gembala</p>
               <div className="footer__links">
                 <span className="footer__text">
-                  Gembala: Pdm. Jimmy Sugiarto
+                  Gembala: {gembala.namaGembala}
                 </span>
                 <span className="footer__text">
-                  Wakil Gembala: Pdm. Freddy Budiman
+                  Wakil Gembala: {gembala.wakilGembala}
                 </span>
               </div>
             </div>

@@ -237,6 +237,11 @@ Cara kerja & catatan:
   URL audio tidak divalidasi keberadaannya (sesuai perilaku aslinya).
 - **Email** bersifat opsional. Jika `MAIL_ENABLED=false`, link reset dicetak ke
   log server (mode development). Untuk produksi, isi konfigurasi SMTP di `.env`.
+- **Public ID UUID v7 (Hybrid)** — kolom `public_id` ditambahkan sebagai
+  identifier API di samping `id` Int internal. Panduan lengkap implementasi,
+  runbook deploy production, dan cara backfill data lama:
+  lihat [`PUBLIC_ID_UUID.md`](./PUBLIC_ID_UUID.md); checklist lanjutan
+  (13 tabel fase 2) di [`PUBLIC_ID_FASE2.md`](./PUBLIC_ID_FASE2.md).
 - **Upload file** disimpan di `public/uploads/` dan disajikan di `/uploads/<path>`.
 
 ## Keamanan

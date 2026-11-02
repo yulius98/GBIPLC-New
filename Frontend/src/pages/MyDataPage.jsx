@@ -50,9 +50,9 @@ export default function MyDataPage() {
   const blobUrlRef = useRef(null)
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.public_id) return
     api
-      .get(`/myprofile/${user.id}/edit`)
+      .get(`/myprofile/${user.public_id}/edit`)
       .then((res) => {
         const data = res.data.data
         setForm({
@@ -69,7 +69,7 @@ export default function MyDataPage() {
       })
       .catch((err) => setError(err.response?.data?.message || 'Gagal memuat data Anda.'))
       .finally(() => setLoading(false))
-  }, [user?.id])
+  }, [user?.public_id])
 
   useEffect(() => {
     return () => {
@@ -140,9 +140,9 @@ export default function MyDataPage() {
     }
 
     try {
-      await api.put(`/myprofile/${user.id}`, body)
+      await api.put(`/myprofile/${user.public_id}`, body)
       if (photoFile) {
-        const res = await api.get(`/myprofile/${user.id}/edit`)
+        const res = await api.get(`/myprofile/${user.public_id}/edit`)
         updateUser(res.data.data)
       } else {
         updateUser({ name: form.name, email: form.email })

@@ -8,12 +8,12 @@ export default function ProfilePage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.public_id) return
     api
-      .get(`/myprofile/${user.id}`)
+      .get(`/myprofile/${user.public_id}`)
       .then((res) => setProfile(res.data.data))
       .catch((err) => setError(err.response?.data?.message || 'Gagal memuat profil.'))
-  }, [user?.id])
+  }, [user?.public_id])
 
   if (!user) return null
 

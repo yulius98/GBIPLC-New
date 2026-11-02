@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
+import DEFAULT_SEO from '../src/modules/settings/seoDefaults.js';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
@@ -93,7 +94,10 @@ async function seedAdminUser() {
 
 /**
  * Buat baris setting SEO (singleton, id=1) bila belum ada.
- * Nilai mengikuti konfigurasi SEO sebelumnya di frontend.
+ * Nilai default diambil dari satu sumber kebenaran
+ * (src/modules/settings/seoDefaults.js) — sama dengan yang dipakai
+ * auto-create runtime di settings.controller.js.
+ * Idempotent: tidak pernah menimpa baris yang sudah di-maintenance admin.
  */
 async function seedSeoSettings() {
   const existing = await prisma.tblSeoSetting.findUnique({ where: { id: 1 } });
@@ -102,40 +106,7 @@ async function seedSeoSettings() {
     return;
   }
   await prisma.tblSeoSetting.create({
-    data: {
-      site_name: "GBI Philadelphia Life Center",
-      site_name_short: "GBI PLC",
-      site_url: "https://philadelphialifecenter.com",
-      locale: "id_ID",
-      default_title: "GBI Philadelphia Life Center — Gereja di Yogyakarta",
-      default_description:
-        "GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di Yogyakarta. Ibadah Raya setiap Minggu pukul 10.00 WIB, Saat Teduh harian, materi kotbah, Youth Ministry, dan Life Group.",
-      keywords:
-        "gereja, GBI, gereja di jogja, gereja di Yogyakarta, gereja di sleman, kotbah, ibadah raya, materi kotbah, saat teduh, GBI PLC, philadelphia life center",
-      church_name: "GBI Philadelphia Life Center",
-      church_alternate_name: "GBI PLC",
-      church_description:
-        "Gereja Bethel Indonesia (GBI) Philadelphia Life Center di Yogyakarta yang melayani Ibadah Raya, Youth Ministry, dan Life Group.",
-      telephone: "+6285336618852",
-      whatsapp: "6285336618852",
-      street_address: "Jl. Babarsari No.45, Janti, Caturtunggal, Kec. Depok",
-      address_locality: "Sleman",
-      address_region: "Daerah Istimewa Yogyakarta",
-      postal_code: "55281",
-      address_country: "ID",
-      service_name: "Ibadah Raya",
-      day_of_week: "Sunday",
-      opens: "10:00",
-      closes: "12:00",
-      instagram: "",
-      facebook: "",
-      pelayanan_title: "Konsultasi / Pelayanan",
-      pelayanan_description:
-        "Butuh dukungan doa, konseling, atau ingin bergabung dalam pelayanan? Tim pelayanan kami siap membantu Anda pada jam kerja gereja.",
-      pelayanan_button_label: "Kirim Pesan",
-      pelayanan_whatsapp_message:
-        "Halo, saya ingin bertanya tentang pelayanan di GBI Philadelphia Life Center.",
-    },
+    data: { ...DEFAULT_SEO, og_image: null },
   });
   console.log('[SEED] Setting SEO dibuat.');
 }

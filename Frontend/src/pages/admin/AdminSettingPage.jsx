@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../../api/client'
 import ServiceScheduleSection from '../../components/ServiceScheduleSection'
+import GembalaSection from '../../components/GembalaSection'
 
 const EMPTY_FORM = {
   site_name: "",
@@ -282,6 +283,8 @@ export default function AdminSettingPage() {
         </section>
 
         <ServiceScheduleSection />
+
+        <GembalaSection />
 
         <section className="card settings-section">
           <h3 className="settings-section__title">Pelayanan / Konsultasi</h3>

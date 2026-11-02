@@ -4,6 +4,7 @@ import prisma from '../../utils/prisma.js';
 import apiResponse from '../../utils/apiResponse.js';
 import AppError from '../../utils/AppError.js';
 import fileUploadService from '../../services/fileUpload.service.js';
+import resolveRowId from '../../utils/publicId.js';
 import { serializeUser } from './user.serializer.js';
 import { UserRole } from '../../constants/roles.js';
 
@@ -51,10 +52,14 @@ const usersController = {
   /**
    * GET /api/myprofile/:id (auth)
    * Detail profil lengkap + photo_url.
+   * :id menerima public_id (UUID) atau id intern (Int) — transisi hybrid.
    */
   async showProfile(req, res) {
+    const selector = resolveRowId(req.params.id);
+    if (!selector) throw new AppError('Data tidak ditemukan', 404);
+
     const user = await prisma.user.findUnique({
-      where: { id: Number(req.params.id) },
+      where: selector,
       include: {
         kunjungans: {
           where: { deleted_at: null },
@@ -76,10 +81,14 @@ const usersController = {
   /**
    * GET /api/myprofile/:id/edit (auth)
    * Data profil untuk form edit.
+   * :id menerima public_id (UUID) atau id intern (Int) — transisi hybrid.
    */
   async editProfile(req, res) {
+    const selector = resolveRowId(req.params.id);
+    if (!selector) throw new AppError('Data tidak ditemukan', 404);
+
     const user = await prisma.user.findUnique({
-      where: { id: Number(req.params.id) },
+      where: selector,
     });
 
     if (!user) {
@@ -98,13 +107,16 @@ const usersController = {
    * Mendukung upload foto baru (field: filename).
    */
   async updateProfile(req, res) {
-    const id = Number(req.params.id);
     const body = req.body || {};
 
-    const existing = await prisma.user.findUnique({ where: { id } });
+    const selector = resolveRowId(req.params.id);
+    if (!selector) throw new AppError('User tidak ditemukan', 404);
+
+    const existing = await prisma.user.findUnique({ where: selector });
     if (!existing) {
       throw new AppError('User tidak ditemukan', 404);
     }
+    const id = existing.id;
 
     // Hanya field yang benar-benar dikirim (mirip $request->has() di Laravel)
     const data = {};

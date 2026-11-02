@@ -1,6 +1,7 @@
 import fileUploadService from '../../services/fileUpload.service.js';
 const SAFE_FIELDS = [
   'id',
+  'public_id',
   'name',
   'email',
   'alamat',

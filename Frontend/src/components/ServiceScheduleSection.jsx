@@ -113,7 +113,7 @@ export default function ServiceScheduleSection() {
     try {
       const payload = { ...form }
       if (editing) {
-        await api.put(`/admin/schedule/${editing.id}`, payload)
+        await api.put(`/admin/schedule/${editing.public_id}`, payload)
         setNotice('Jadwal ibadah berhasil diperbarui.')
       } else {
         await api.post('/admin/schedule', payload)
@@ -134,7 +134,7 @@ export default function ServiceScheduleSection() {
     setError('')
     setNotice('')
     try {
-      await api.delete(`/admin/schedule/${item.id}`)
+      await api.delete(`/admin/schedule/${item.public_id}`)
       setNotice('Jadwal ibadah berhasil dihapus.')
       await load()
     } catch (err) {

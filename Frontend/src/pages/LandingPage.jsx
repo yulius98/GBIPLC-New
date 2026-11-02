@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import api, { MEDIA_URL } from '../api/client'
 import { useSeo } from '../context/SeoContext'
+import useServiceSchedules from '../hooks/useServiceSchedules'
 import { useSEO } from '../utils/seo'
 import { buildChurchJsonLd } from "../utils/churchJsonLd";
 import HeroCarousel from "../components/HeroCarousel";
@@ -16,13 +17,19 @@ function formatDate(value) {
 
 export default function LandingPage() {
   const seo = useSeo();
+  const { rawSchedules } = useServiceSchedules();
+
+  const churchJsonLd = useMemo(
+    () => buildChurchJsonLd(seo, "/", rawSchedules),
+    [seo, rawSchedules],
+  );
 
   useSEO({
     path: "/",
     title: seo.defaultTitle,
     description: seo.defaultDescription,
     keywords: seo.keywords,
-    jsonLd: buildChurchJsonLd(seo),
+    jsonLd: churchJsonLd,
   });
 
   const [carousel, setCarousel] = useState([]);

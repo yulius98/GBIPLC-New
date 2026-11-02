@@ -1,26 +1,15 @@
 import { useMemo } from 'react'
 import { useSeo } from '../context/SeoContext'
+import useServiceSchedules from '../hooks/useServiceSchedules'
 import { useSEO } from '../utils/seo'
 import { buildChurchJsonLd } from '../utils/churchJsonLd'
-
-const DAYS_ID = {
-  Sunday: 'Minggu',
-  Monday: 'Senin',
-  Tuesday: 'Selasa',
-  Wednesday: 'Rabu',
-  Thursday: 'Kamis',
-  Friday: 'Jumat',
-  Saturday: 'Sabtu',
-}
-
-// "10:00" -> "10.00"
-const formatTime = (t) => (t ? String(t).trim().replace(':', '.') : '')
 
 const buildWaLink = (number, message) =>
   `https://wa.me/${number}?text=${encodeURIComponent(message)}`
 
 export default function ContactPage() {
   const seo = useSeo()
+  const { schedules, rawSchedules } = useServiceSchedules()
   const church = seo.church
   const pelayanan = church.pelayanan || {}
 
@@ -53,24 +42,28 @@ export default function ContactPage() {
       `Halo, saya ingin bertanya tentang pelayanan di ${church.name}.`,
   )
 
-  // Jadwal diambil dari setting "Jadwal Ibadah" di admin
-  const schedule = useMemo(() => {
-    const s = church.service
-    if (!s?.name) return []
-    const day = DAYS_ID[s.dayOfWeek] || s.dayOfWeek
-    const time = [s.opens, s.closes].filter(Boolean).map(formatTime).join(' – ')
-    const value = [day, time && `${time} WIB`].filter(Boolean).join(', ')
-    return [{ label: s.name, value }]
-  }, [church.service])
+  // Jadwal dari tabel tbl_service_schedules (fallback ke setting SEO
+  // bila tabel masih kosong). Format: "Minggu, 10.00–12.00 WIB"
+  const schedule = useMemo(
+    () =>
+      schedules.map((item) => ({
+        label: item.name,
+        value: [item.day, item.time && `${item.time} WIB`].filter(Boolean).join(', '),
+      })),
+    [schedules],
+  )
 
-  const contactJsonLd = useMemo(() => buildChurchJsonLd(seo, '/kontak'), [seo])
+  const contactJsonLd = useMemo(
+    () => buildChurchJsonLd(seo, '/kontak', rawSchedules),
+    [seo, rawSchedules],
+  )
 
   useSEO({
     path: '/kontak',
     title: 'Kontak & Kunjungan',
-    description: `Kunjungi atau hubungi ${church.name} di ${church.address.streetAddress}, ${church.address.addressLocality}. ${church.service.name} setiap ${
-      DAYS_ID[church.service.dayOfWeek] || church.service.dayOfWeek
-    } pukul ${formatTime(church.service.opens)} WIB. WhatsApp ${displayPhone}.`,
+    description: `Kunjungi atau hubungi ${church.name} di ${church.address.streetAddress}, ${church.address.addressLocality}. ${
+      schedule[0] ? `${schedule[0].label}: ${schedule[0].value}. ` : ''
+    }WhatsApp ${displayPhone}.`,
     keywords: seo.keywords,
     jsonLd: contactJsonLd,
   })

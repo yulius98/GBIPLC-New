@@ -90,14 +90,19 @@ export default function AboutPage() {
             </div>
           </div>
           <p className="about__lede">{seo.church.description}</p>
-          <p className="about__text">
-            GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di
-            Yogyakarta yang terbuka bagi setiap keluarga. Kami merayakan{" "}
-            <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>,
-            membagikan <strong>materi kotbah</strong> dan renungan{" "}
-            <strong>Saat Teduh</strong> harian, serta melayani generasi muda
-            lewat Youth Ministry dan persekutuan Life Group.
-          </p>
+          {seo.defaultDescription ? (
+            // Paragraf pengantar dari Setting Admin → Setting SEO → "Deskripsi Default"
+            <p className="about__text">{seo.defaultDescription}</p>
+          ) : (
+            <p className="about__text">
+              GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di
+              Yogyakarta yang terbuka bagi setiap keluarga. Kami merayakan{" "}
+              <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>,
+              membagikan <strong>materi kotbah</strong> dan renungan{" "}
+              <strong>Saat Teduh</strong> harian, serta melayani generasi muda
+              lewat Youth Ministry dan persekutuan Life Group.
+            </p>
+          )}
           <p className="about__text">
             Kami percaya gereja adalah rumah — tempat setiap orang disambut,
             diperlengkapi, dan dikirim untuk menjadi berkat bagi Yogyakarta.
