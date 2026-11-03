@@ -2987,3 +2987,709 @@ a {
     height: 24px;
   }
 }
+
+/* ============================================================
+   Dashboard admin — infografis & statistik berwarna
+   Warna per metrik dikendalikan via --dash-color (inline style),
+   selaras palet brand (navy & emas).
+   ============================================================ */
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, #0f2439 0%, #17324d 55%, #2a5278 100%);
+  color: #fff;
+}
+
+.dash-hero::before {
+  content: '';
+  position: absolute;
+  right: -70px;
+  top: -90px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 164, 99, 0.35) 0%, rgba(201, 164, 99, 0.08) 55%, transparent 70%);
+  pointer-events: none;
+}
+
+.dash-hero::after {
+  content: '';
+  position: absolute;
+  right: 70px;
+  bottom: -110px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+
+.dash-hero__text {
+  position: relative;
+  z-index: 1;
+}
+
+.dash-hero__badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(201, 164, 99, 0.18);
+  border: 1px solid rgba(201, 164, 99, 0.45);
+  color: #e9d9b6;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+}
+
+.dash-hero h2 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-body);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.dash-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+}
+
+.dash-hero__date {
+  position: relative;
+  z-index: 1;
+  text-align: right;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.dash-hero__date strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.dash-hero__date span {
+  font-size: 0.78rem;
+  color: #e9d9b6;
+}
+
+/* Skeleton saat memuat */
+.dash-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.dash-loading__card {
+  height: 120px;
+  border-radius: var(--radius);
+  background: linear-gradient(100deg, #e9eef5 40%, #f7fafd 50%, #e9eef5 60%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.4s infinite linear;
+}
+
+.dash-loading__card:nth-child(2) { animation-delay: 0.15s; }
+.dash-loading__card:nth-child(3) { animation-delay: 0.3s; }
+.dash-loading__card:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes dash-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* Grid umum dashboard */
+.dash-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-grid--four {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.dash-grid--charts {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+
+/* Kartu statistik utama */
+.dash-stat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.dash-stat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--dash-color);
+  border-radius: 0 999px 999px 0;
+  transition: var(--transition);
+}
+
+.dash-stat::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--dash-color) 7%, transparent);
+  pointer-events: none;
+}
+
+.dash-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--dash-color) 18%, transparent);
+}
+
+.dash-stat:hover::before {
+  width: 6px;
+}
+
+.dash-stat__icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--dash-color);
+  background: color-mix(in srgb, var(--dash-color) 12%, white);
+}
+
+.dash-stat__body {
+  min-width: 0;
+}
+
+.dash-stat__value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--primary-dark);
+}
+
+.dash-stat__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 0.2rem;
+}
+
+.dash-stat__caption {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+.dash-stat__chip {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--dash-color);
+  background: color-mix(in srgb, var(--dash-color) 13%, white);
+}
+
+/* Panel infografis */
+.dash-panel {
+  padding: 1.4rem 1.5rem;
+  min-width: 0;
+}
+
+.dash-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.dash-panel__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.dash-panel__sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.dash-panel__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--dash-color);
+  background: color-mix(in srgb, var(--dash-color) 12%, white);
+}
+
+/* Grafik batang — pengunjung 14 hari (emas), hari ini disorot navy */
+.dash-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 210px;
+}
+
+.dash-bar {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.dash-bar__col {
+  width: 100%;
+  max-width: 34px;
+  height: var(--dash-h);
+  border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, #dfc391 0%, var(--accent) 100%);
+  transition: var(--transition);
+}
+
+.dash-bar:hover .dash-bar__col {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 14px rgba(176, 141, 79, 0.35);
+}
+
+.dash-bar.is-today .dash-bar__col {
+  background: linear-gradient(180deg, #2a5278 0%, #17324d 100%);
+  box-shadow: 0 6px 14px rgba(23, 50, 77, 0.3);
+}
+
+.dash-bar__val {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: var(--transition);
+}
+
+.dash-bar:hover .dash-bar__val,
+.dash-bar.is-today .dash-bar__val {
+  opacity: 1;
+  transform: none;
+}
+
+.dash-bar__lbl {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+/* Donut — komposisi anggota */
+.dash-donut {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.dash-donut__ring {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.dash-donut__ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dash-donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-donut__center strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  line-height: 1.15;
+}
+
+.dash-donut__center span {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.dash-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.dash-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.dash-legend__label {
+  flex: 1;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.dash-legend strong {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.dash-legend small {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-width: 2.4rem;
+  text-align: right;
+}
+
+/* Ubin ringkasan konten */
+.dash-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.dash-tile {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.9rem 0.95rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--dash-color) 6%, white);
+  border: 1px solid color-mix(in srgb, var(--dash-color) 16%, white);
+  transition: var(--transition);
+}
+
+.dash-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--dash-color) 16%, transparent);
+}
+
+.dash-tile__icon {
+  color: var(--dash-color);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.dash-tile__value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--primary-dark);
+}
+
+.dash-tile__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-tile__sub {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* Mini bar — kunjungan pastoral 6 bulan */
+.dash-minititle {
+  margin: 1.5rem 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dash-grid .dash-minititle {
+  font-family: var(--font-body);
+}
+
+.dash-mini {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 120px;
+}
+
+.dash-mini__col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.dash-mini__bar {
+  width: 100%;
+  max-width: 40px;
+  height: var(--dash-h);
+  border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(180deg, #4aa3d8 0%, #0284c7 100%);
+  transition: var(--transition);
+}
+
+.dash-mini__col:hover .dash-mini__bar {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.3);
+}
+
+.dash-mini__val {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.dash-mini__lbl {
+  font-size: 0.64rem;
+  color: var(--muted);
+}
+
+/* Daftar ulang tahun mendekat */
+.dash-ultah {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dash-ultah li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  transition: var(--transition);
+}
+
+.dash-ultah li:hover {
+  background: var(--accent-soft);
+}
+
+.dash-ultah__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-weight: 800;
+  background: color-mix(in srgb, var(--accent) 20%, white);
+  color: var(--accent-dark);
+}
+
+.dash-ultah__nama {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-ultah__nama strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ultah__nama small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.dash-ultah__chip {
+  flex-shrink: 0;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  background: color-mix(in srgb, var(--accent) 16%, white);
+}
+
+.dash-ultah__chip.is-today {
+  color: var(--primary-dark);
+  background: var(--accent);
+}
+
+/* Menu pintasan berwarna */
+.dash-minititle--menu {
+  margin: 1.75rem 0 0.9rem;
+  font-size: 0.95rem;
+}
+
+.dash-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.dash-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.05rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: var(--transition);
+}
+
+.dash-menu__item:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--dash-color) 40%, white);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--dash-color) 20%, transparent);
+}
+
+.dash-menu__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--dash-color) 13%, white);
+  color: var(--dash-color);
+  transition: var(--transition);
+}
+
+.dash-menu__item:hover .dash-menu__icon {
+  background: var(--dash-color);
+  color: #fff;
+}
+
+.dash-menu__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-menu__text strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+}
+
+.dash-menu__text small {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.dash-menu__arrow {
+  color: var(--muted);
+  transition: var(--transition);
+}
+
+.dash-menu__item:hover .dash-menu__arrow {
+  transform: translateX(3px);
+  color: var(--dash-color);
+}
+
+/* Ikon SVG pada menu sidebar */
+.admin__menu-icon {
+  display: grid;
+  place-items: center;
+}
+
+.admin__menu-icon svg {
+  display: block;
+}
+
+.dash-empty {
+  margin: 0;
+  padding: 1.25rem 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+/* Responsif dashboard admin */
+@media (max-width: 900px) {
+  .dash-grid--charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dash-hero {
+    padding: 1.35rem 1.35rem;
+  }
+
+  .dash-hero h2 {
+    font-size: 1.2rem;
+  }
+
+  .dash-hero__date {
+    text-align: left;
+  }
+
+  .dash-chart {
+    height: 160px;
+    gap: 4px;
+  }
+
+  .dash-donut {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+

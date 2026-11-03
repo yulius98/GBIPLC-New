@@ -1,13 +1,23 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  IconDashboard,
+  IconCalendar,
+  IconBook,
+  IconChurch,
+  IconHeart,
+  IconSettings,
+  IconGlobeExternal,
+  IconLogout,
+} from './Icons'
 
 const MENU = [
-  { to: '/dashboard', label: 'Dashboard', icon: '▦' },
-  { to: '/dashboard/kegiatan', label: 'Kegiatan', icon: '📅' },
-  { to: '/dashboard/saat-teduh', label: 'Saat Teduh', icon: '📖' },
-  { to: '/dashboard/ibadah-raya', label: 'Ibadah Raya', icon: '⛪' },
-  { to: '/dashboard/kunjungan', label: 'Kunjungan', icon: '🤝' },
-  { to: '/dashboard/setting', label: 'Setting', icon: '⚙' },
+  { to: '/dashboard', label: 'Dashboard', icon: <IconDashboard size={18} /> },
+  { to: '/dashboard/kegiatan', label: 'Kegiatan', icon: <IconCalendar size={18} /> },
+  { to: '/dashboard/saat-teduh', label: 'Saat Teduh', icon: <IconBook size={18} /> },
+  { to: '/dashboard/ibadah-raya', label: 'Ibadah Raya', icon: <IconChurch size={18} /> },
+  { to: '/dashboard/kunjungan', label: 'Kunjungan', icon: <IconHeart size={18} /> },
+  { to: '/dashboard/setting', label: 'Setting', icon: <IconSettings size={18} /> },
 ]
 
 export default function AdminLayout() {
@@ -45,11 +55,11 @@ export default function AdminLayout() {
 
         <div className="admin__sidebar-footer">
           <NavLink to="/" className="admin__menu-item">
-            <span className="admin__menu-icon">🌐</span>
+            <span className="admin__menu-icon"><IconGlobeExternal size={18} /></span>
             Lihat Situs
           </NavLink>
           <button type="button" className="admin__menu-item admin__menu-item--button" onClick={handleLogout}>
-            <span className="admin__menu-icon">↪</span>
+            <span className="admin__menu-icon"><IconLogout size={18} /></span>
             Keluar
           </button>
         </div>
