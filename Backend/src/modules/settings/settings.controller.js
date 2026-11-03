@@ -196,7 +196,15 @@ async function getTentang(req, res) {
  */
 async function updateTentang(req, res) {
   const body = req.body || {};
-  const fields = ['judul', 'sub_judul', 'lede', 'paragraf_1', 'paragraf_2'];
+  const fields = [
+    'judul',
+    'sub_judul',
+    'lede',
+    'paragraf_1',
+    'paragraf_2',
+    'selayang_judul',
+    'pelayanan_judul',
+  ];
   const data = {};
   for (const field of fields) {
     if (Object.prototype.hasOwnProperty.call(body, field)) {
@@ -204,7 +212,7 @@ async function updateTentang(req, res) {
     }
   }
 
-  if (!data.judul && !data.sub_judul && !data.lede && !data.paragraf_1 && !data.paragraf_2) {
+  if (!data.judul && !data.sub_judul && !data.lede && !data.paragraf_1 && !data.paragraf_2 && !data.selayang_judul && !data.pelayanan_judul) {
     return apiResponse.error(res, {
       message: 'Minimal satu field wajib diisi',
       statusCode: 422,
@@ -221,6 +229,8 @@ async function updateTentang(req, res) {
       lede: data.lede || '',
       paragraf_1: data.paragraf_1 || '',
       paragraf_2: data.paragraf_2 || '',
+      selayang_judul: data.selayang_judul || 'Sebuah Keluarga Iman di Yogyakarta',
+      pelayanan_judul: data.pelayanan_judul || 'Yang Kami Lakukan Bersama',
     },
   });
 

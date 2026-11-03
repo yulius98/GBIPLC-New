@@ -1,41 +1,20 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useSeo } from "../context/SeoContext";
+import useTentang from "../hooks/useTentang";
 import { useSEO } from "../utils/seo";
 
-const ministries = [
-  {
-    icon: "IR",
-    title: "Ibadah Raya",
-    frequency: "Setiap Minggu, 10.00 WIB",
-    description:
-      "Perayaan bersama keluarga besar GBI PLC — menyembah Tuhan, mendengarkan kotbah, dan bertumbuh dalam iman.",
-  },
-  {
-    icon: "ST",
-    title: "Materi Kotbah & Saat Teduh",
-    frequency: "Mingguan & Harian",
-    description:
-      "Dapatkan materi kotbah mingguan dan renungan Saat Teduh harian untuk memperdalam perjalanan rohani Anda.",
-  },
-  {
-    icon: "YM",
-    title: "Youth Ministry",
-    frequency: "Sabtu, 16.00 WIB",
-    description:
-      "Wadah bagi generasi muda untuk bertumbuh dalam iman, persekutuan, dan pelayanan.",
-  },
-  {
-    icon: "LG",
-    title: "Life Group",
-    frequency: "Terjadwal",
-    description:
-      "Persekutuan kecil antar keluarga agar setiap anggota saling menguatkan dan bertumbuh bersama.",
-  },
-];
-
+/**
+ * Halaman publik /tentang.
+ *
+ * Seluruh konten (judul, sub judul, paragraf, kartu pelayanan) diambil dari
+ * tabel tbl_tentang_kami + tbl_tentang_kami_pelayanan via API /api/tentang
+ * (dikelola di Admin → Setting → card "Tentang Kami") — tidak ada hardcode.
+ * Metadata SEO tetap dari Setting SEO (tbl_seo_settings).
+ */
 export default function AboutPage() {
   const seo = useSeo();
+  const { tentang, pelayanan } = useTentang();
 
   const churchJsonLd = useMemo(
     () => ({
@@ -43,7 +22,7 @@ export default function AboutPage() {
       "@type": "Church",
       name: seo.church.name,
       alternateName: seo.church.alternateName,
-      description: seo.church.description,
+      description: tentang.lede || seo.church.description,
       url: `${seo.siteUrl}/tentang`,
       telephone: seo.church.telephone,
       address: {
@@ -57,13 +36,15 @@ export default function AboutPage() {
         closes: seo.church.service.closes,
       },
     }),
-    [seo],
+    [seo, tentang.lede],
   );
 
   useSEO({
     path: "/tentang",
     title: "Tentang Kami",
-    description: `Tentang ${seo.church.name} (GBI PLC) — gereja Bethel di Yogyakarta untuk keluarga. Ibadah Raya setiap Minggu pukul 10.00 WIB, materi kotbah, Saat Teduh, Youth Ministry, dan Life Group.`,
+    description: `Tentang ${seo.church.name} (${seo.church.alternateName}) — ${
+      tentang.lede || seo.church.description
+    }`,
     keywords: seo.keywords,
     jsonLd: churchJsonLd,
   });
@@ -72,11 +53,8 @@ export default function AboutPage() {
     <div className="about">
       <section className="about__hero">
         <span className="section-head__eyebrow">Tentang Kami</span>
-        <h1>Mengenal GBI Philadelphia Life Center</h1>
-        <p className="muted">
-          Gereja Bethel di Yogyakarta yang terbuka bagi setiap keluarga untuk
-          bertumbuh dalam iman dan kasih Kristus.
-        </p>
+        <h1>{tentang.judul}</h1>
+        <p className="muted">{tentang.sub_judul}</p>
       </section>
 
       <div className="container container--wide">
@@ -84,31 +62,12 @@ export default function AboutPage() {
           <div className="section-head">
             <div>
               <span className="section-head__eyebrow">Siapa Kami</span>
-              <h2 className="section-title">
-                Sebuah Keluarga Iman di Yogyakarta
-              </h2>
+              <h2 className="section-title">{tentang.selayang_judul}</h2>
             </div>
           </div>
-          <p className="about__lede">{seo.church.description}</p>
-          {seo.defaultDescription ? (
-            // Paragraf pengantar dari Setting Admin → Setting SEO → "Deskripsi Default"
-            <p className="about__text">{seo.defaultDescription}</p>
-          ) : (
-            <p className="about__text">
-              GBI Philadelphia Life Center (GBI PLC) adalah gereja Bethel di
-              Yogyakarta yang terbuka bagi setiap keluarga. Kami merayakan{" "}
-              <strong>Ibadah Raya setiap Minggu pukul 10.00 WIB</strong>,
-              membagikan <strong>materi kotbah</strong> dan renungan{" "}
-              <strong>Saat Teduh</strong> harian, serta melayani generasi muda
-              lewat Youth Ministry dan persekutuan Life Group.
-            </p>
-          )}
-          <p className="about__text">
-            Kami percaya gereja adalah rumah — tempat setiap orang disambut,
-            diperlengkapi, dan dikirim untuk menjadi berkat bagi Yogyakarta.
-            Apapun tahap hidup Anda, ada tempat bagi Anda dalam keluarga GBI
-            PLC.
-          </p>
+          <p className="about__lede">{tentang.lede}</p>
+          <p className="about__text">{tentang.paragraf_1}</p>
+          <p className="about__text">{tentang.paragraf_2}</p>
           <div className="about__actions">
             <Link to="/kontak" className="btn btn--primary">
               Kunjungi Kami
@@ -123,16 +82,16 @@ export default function AboutPage() {
           <div className="section-head">
             <div>
               <span className="section-head__eyebrow">Pelayanan</span>
-              <h2 className="section-title">Yang Kami Lakukan Bersama</h2>
+              <h2 className="section-title">{tentang.pelayanan_judul}</h2>
             </div>
           </div>
           <div className="youth__programs">
-            {ministries.map((m) => (
-              <article className="card program-card" key={m.title}>
+            {pelayanan.map((m) => (
+              <article className="card program-card" key={m.id ?? m.judul}>
                 <div className="program-card__icon">{m.icon}</div>
-                <h3>{m.title}</h3>
-                <p className="muted">{m.frequency}</p>
-                <p>{m.description}</p>
+                <h3>{m.judul}</h3>
+                <p className="muted">{m.frekuensi}</p>
+                <p>{m.deskripsi}</p>
               </article>
             ))}
           </div>

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 export default function DashboardPage() {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
+  const [visitors, setVisitors] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -14,6 +15,10 @@ export default function DashboardPage() {
       .get(`/dashboard/${user.id}`)
       .then((res) => setStats(res.data.data))
       .catch((err) => setError(err.response?.data?.message || 'Gagal memuat statistik.'))
+    api
+      .get('/dashboard/visitors')
+      .then((res) => setVisitors(res.data.data))
+      .catch(() => {})
   }, [user?.id, user?.role])
 
   if (user?.role !== 'pengurus') {
@@ -24,6 +29,13 @@ export default function DashboardPage() {
     ? [
         ['Total Jemaat', stats.jumlah_jemaat],
         ['Jemaat Baru (1 bulan)', stats.jumlah_jemaat_baru],
+      ]
+    : []
+
+  const visitorCards = visitors
+    ? [
+        [`Pengunjung Bulan Ini (${visitors.periode ?? ''})`.trim(), visitors.pengunjung_bulan_ini],
+        ['Total Pengunjung', visitors.total_pengunjung],
       ]
     : []
 
@@ -40,6 +52,12 @@ export default function DashboardPage() {
         {cards.map(([label, value]) => (
           <div className="card stat" key={label}>
             <div className="stat__value">{value ?? 0}</div>
+            <div className="stat__label">{label}</div>
+          </div>
+        ))}
+        {visitorCards.map(([label, value]) => (
+          <div className="card stat" key={label}>
+            <div className="stat__value">{value}</div>
             <div className="stat__label">{label}</div>
           </div>
         ))}

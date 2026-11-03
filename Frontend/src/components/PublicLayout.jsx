@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useSeo } from '../context/SeoContext'
 import useServiceSchedules from '../hooks/useServiceSchedules'
 import useDataGembala from '../hooks/useDataGembala'
+import WhatsAppFab from './WhatsAppFab'
+import MapFab from './MapFab'
 
 export default function PublicLayout() {
   const { user, logout } = useAuth()
@@ -19,6 +22,24 @@ export default function PublicLayout() {
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Catat kunjungan pengunjung web (statistik admin).
+  // Sekali per sesi browser; dedup per perangkat per hari ditangani server.
+  useEffect(() => {
+    if (sessionStorage.getItem('gbipc_visit_tracked')) return
+    sessionStorage.setItem('gbipc_visit_tracked', '1')
+
+    let visitorId = localStorage.getItem('gbipc_visitor_id')
+    if (!visitorId) {
+      visitorId =
+        crypto?.randomUUID?.() ??
+        `v-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      localStorage.setItem('gbipc_visitor_id', visitorId)
+    }
+
+    api.post('/visits', { visitor_id: visitorId }).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sekali per sesi
   }, [])
 
   function handleLogout() {
@@ -214,6 +235,9 @@ export default function PublicLayout() {
           </div>
         </div>
       </footer>
+
+      <WhatsAppFab />
+      <MapFab />
     </div>
   );
 }

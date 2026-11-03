@@ -79,6 +79,13 @@ const serviceScheduleController = createCrudController({
   resourceName: 'Jadwal Ibadah',
 });
 
+const tentangPelayananController = createCrudController({
+  model: prisma.tblTentangKamiPelayanan,
+  orderBy: { id: 'asc' },
+  allowedFields: ['icon', 'judul', 'frekuensi', 'deskripsi'],
+  resourceName: 'Kartu Pelayanan',
+});
+
 // ---------- Kegiatan (event) ----------
 router.get('/event', ...auth, eventController.list);
 router.post('/event', ...auth, uploadFields([{ name: 'filename', maxCount: 1 }]), eventController.create);
@@ -122,6 +129,14 @@ router.put('/seo', ...auth, uploadFields([{ name: 'og_image', maxCount: 1 }]), s
 router.get('/gembala', ...auth, settingsController.getGembala);
 router.put('/gembala', ...auth, settingsController.updateGembala);
 
+// ---------- Tentang Kami (setting: singleton teks + kartu pelayanan multi-row) ----------
+router.get('/tentang', ...auth, settingsController.getTentang);
+router.put('/tentang', ...auth, settingsController.updateTentang);
+router.get('/tentang-pelayanan', ...auth, tentangPelayananController.list);
+router.post('/tentang-pelayanan', ...auth, tentangPelayananController.create);
+router.get('/tentang-pelayanan/:id', ...auth, tentangPelayananController.get);
+router.put('/tentang-pelayanan/:id', ...auth, tentangPelayananController.update);
+router.delete('/tentang-pelayanan/:id', ...auth, tentangPelayananController.remove);
 // ---------- Jadwal Ibadah (setting, multi-row) ----------
 router.get('/schedule', ...auth, serviceScheduleController.list);
 router.post('/schedule', ...auth, serviceScheduleController.create);

@@ -331,14 +331,16 @@ model TblDataGembala {
 
 // Konten halaman Tentang (singleton, id=1)
 model TblTentangKami {
-  id         Int      @id @default(autoincrement())
-  judul      String
-  sub_judul  String
-  lede       String
-  paragraf_1 String
-  paragraf_2 String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  judul           String
+  sub_judul       String
+  lede            String
+  paragraf_1      String
+  paragraf_2      String
+  selayang_judul  String
+  pelayanan_judul String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   @@map("tbl_tentang_kami")
 }
@@ -355,4 +357,17 @@ model TblTentangKamiPelayanan {
   updated_at DateTime @updatedAt
 
   @@map("tbl_tentang_kami_pelayanan")
+}
+
+// Statistik kunjungan website: satu baris per pengunjung per hari.
+// visitor_hash = sha256(visitor_id perangkat + IP + tanggal), unik untuk
+// dedup otomatis (refresh/hit berulang di hari yang sama tidak dihitung ulang).
+model TblVisitorStat {
+  id           Int      @id @default(autoincrement())
+  visitor_hash String   @unique
+  visit_date   DateTime @db.Date
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("tbl_visitor_counts")
 }

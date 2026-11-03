@@ -6,6 +6,7 @@ const router = Router();
 router.get('/seo', settingsController.getSeo);
 router.get('/schedule', settingsController.getSchedules); // jadwal ibadah (footer publik)
 router.get('/gembala', settingsController.getGembala); // data gembala (footer publik)
+router.get('/tentang', settingsController.getTentang); // konten halaman Tentang (publik)
 router.get('/pastornote', contentsController.pastornote);
 router.get('/event', contentsController.event);
 router.get('/carousel', contentsController.carousel);

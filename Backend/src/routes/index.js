@@ -10,11 +10,13 @@ import youthRoutes from '../modules/youth/youth.routes.js';
 import miscRoutes from '../modules/misc/misc.routes.js';
 import uploadRoutes from '../modules/upload/upload.routes.js';
 import adminRoutes from '../modules/admin/admin.routes.js';
+import visitorRoutes from '../modules/visitors/visitors.routes.js';
 const router = Router();
 
 router.use(authRoutes);       // /api/login, /logout, /refresh, /user
 router.use(usersRoutes);      // /api/register, /myprofile, /birthday
 router.use(contentsRoutes);   // /api/pastornote, /event, /carousel, ...
+router.use(visitorRoutes);    // /api/visits, /api/dashboard/visitors (sebelum /dashboard/:id agar tidak tertelan)
 router.use('/reading', readingRoutes); // /api/reading/*
 router.use(dashboardRoutes);  // /api/dashboard, /api/pengurus/dashboard
 router.use(passwordResetRoutes); // /api/forgot-password, /reset-password
