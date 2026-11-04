@@ -9,6 +9,12 @@ import { serializeUser } from './user.serializer.js';
 import { UserRole } from '../../constants/roles.js';
 
 /**
+ * Akun admin utama dari seed — tidak ditampilkan di kelola user
+ * dan tidak dapat diubah/dihapus lewat API.
+ */
+const PROTECTED_ADMIN_NAME = 'Admin GBI';
+
+/**
  * Controller pengguna: registrasi jemaat, profil, dan ulang tahun.
  */
 const usersController = {
@@ -159,7 +165,7 @@ const usersController = {
     const q = String(req.query.q || '').trim();
     const role = String(req.query.role || '').trim();
 
-    const where = { deleted_at: null };
+    const where = { deleted_at: null, name: { not: PROTECTED_ADMIN_NAME } };
     if (q) {
       where.OR = [
         { name: { contains: q, mode: 'insensitive' } },
@@ -215,6 +221,10 @@ const usersController = {
       throw new AppError('Role akun sendiri tidak dapat diubah', 422);
     }
 
+    if (existing.name === PROTECTED_ADMIN_NAME) {
+      throw new AppError('Akun Admin GBI dilindungi dan tidak dapat diubah', 422);
+    }
+
     const updated = await prisma.user.update({
       where: { id: existing.id },
       data: { role },
@@ -239,6 +249,10 @@ const usersController = {
 
     if (req.user && existing.id === req.user.id) {
       throw new AppError('Akun sendiri tidak dapat dihapus', 422);
+    }
+
+    if (existing.name === PROTECTED_ADMIN_NAME) {
+      throw new AppError('Akun Admin GBI dilindungi dan tidak dapat dihapus', 422);
     }
 
     if (existing.deleted_at) {

@@ -1,5 +1,5 @@
 import prisma from '../../utils/prisma.js';
-import tokenService from '../../services/token.service.js';
+import tokenService, { AUTH_COOKIE } from '../../services/token.service.js';
 import apiResponse from '../../utils/apiResponse.js';
 import AppError from '../../utils/AppError.js';
 import bcrypt from 'bcryptjs';
@@ -37,8 +37,12 @@ const authController = {
    * Membuat token baru dari token lama yang masih valid.
    */
   async refresh(req, res) {
+    // Klien web mengirim via httpOnly cookie; klien mobile via Bearer header.
     const authHeader = req.headers.authorization || '';
-    const oldToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const oldToken =
+      (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null) ||
+      req.cookies?.[AUTH_COOKIE] ||
+      null;
 
     if (!oldToken) {
       throw new AppError('Token tidak valid', 401);
@@ -65,6 +69,17 @@ const authController = {
    * Client menghapus tokennya. Server cukup merespons sukses.
    */
   async logout(req, res) {
+    // Batalkan token di server-side (blacklist jti):
+    // ambil dari Bearer header (mobile) atau httpOnly cookie (web).
+    const authHeader = req.headers.authorization || '';
+    const token =
+      (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null) ||
+      req.cookies?.[AUTH_COOKIE] ||
+      null;
+    if (token) tokenService.revoke(token);
+
+    // Hapus httpOnly cookie pada klien web (klien mobile menghapus tokennya sendiri).
+    tokenService.clearAuthCookie(res);
     return apiResponse.success(res, {
       message: 'Berhasil logout',
     });

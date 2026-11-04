@@ -35,4 +35,10 @@ const env = {
   isProduction: process.env.NODE_ENV === 'production',
 };
 
+// Secret bawaan hanya boleh dipakai untuk development lokal.
+// Di produksi, token yang ditandatangani secret publik ini dapat ditempa...
+if (env.isProduction && !process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET wajib diisi di environment produksi (Backend/.env).');
+}
+
 export default env;

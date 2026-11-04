@@ -16,27 +16,27 @@ const passwordResetController = {
   async sendResetLinkEmail(req, res) {
     const { email } = req.validated_body;
 
+    // Jangan membuka keberadaan akun: balasan selalu sama untuk semua email.
+    const genericMessage = 'Jika email terdaftar, link reset password telah dikirim ke email Anda.';
+
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return res.status(422).json({
-        status: false,
-        message: 'Alamat email tidak terdaftar',
+    if (user) {
+      // Token acak; yang disimpan adalah SHA-256-nya agar bocornya database
+      // tidak langsung memberi token reset yang berlaku.
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      await prisma.passwordResetToken.upsert({
+        where: { email },
+        update: { token: tokenHash, created_at: new Date() },
+        create: { email, token: tokenHash },
       });
+
+      await mailService.sendPasswordReset(email, token);
     }
-
-    // Token acak, simpan ke tabel password_reset_tokens
-    const token = crypto.randomBytes(32).toString('hex');
-    await prisma.passwordResetToken.upsert({
-      where: { email },
-      update: { token, created_at: new Date() },
-      create: { email, token },
-    });
-
-    await mailService.sendPasswordReset(email, token);
 
     return res.json({
       status: true,
-      message: 'Link reset password telah dikirim ke email Anda.',
+      message: genericMessage,
     });
   },
 
@@ -51,8 +51,13 @@ const passwordResetController = {
       where: { email },
     });
 
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
     // Token tidak ditemukan / sudah kedaluwarsa
-    if (!record || record.token !== token) {
+    if (!record || record.token !== tokenHash) {
       return res.status(422).json({
         message: 'Token reset password tidak valid atau sudah expired',
       });

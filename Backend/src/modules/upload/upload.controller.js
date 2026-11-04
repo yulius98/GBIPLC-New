@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import multer from 'multer';
 import AppError from '../../utils/AppError.js';
 import { UPLOAD_DIR } from '../../middlewares/upload.js';
+import { detectFileType, DOCUMENT_TYPES } from '../../utils/fileTypes.js';
 
 /**
  * Chunk upload (protokol Resumable.js).
@@ -30,12 +31,19 @@ function sanitizeIdentifier(identifier) {
   return String(identifier || '').replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
+// Nomor chunk hanya boleh digit: mencegah traversal via "../../"
+// pada path "chunk_<nomor>".
+function sanitizeChunkNumber(chunkNumber) {
+  const digits = String(chunkNumber || 0).replace(/[^0-9]/g, '');
+  return digits || '0';
+}
+
 function getChunkDir(identifier) {
   return path.join(CHUNKS_ROOT, sanitizeIdentifier(identifier));
 }
 
 function getChunkPath(identifier, chunkNumber) {
-  return path.join(getChunkDir(identifier), `chunk_${chunkNumber}`);
+  return path.join(getChunkDir(identifier), `chunk_${sanitizeChunkNumber(chunkNumber)}`);
 }
 
 /**
@@ -47,7 +55,7 @@ const uploadChunk = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, TMP_DIR),
     filename: (req, file, cb) =>
-      cb(null, `chunk_${req.body.resumableChunkNumber || 0}`),
+      cb(null, `chunk_${sanitizeChunkNumber(req.body.resumableChunkNumber)}`),
   }),
   limits: { fileSize: MAX_CHUNK_SIZE },
 }).single('file');
@@ -176,6 +184,14 @@ const uploadController = {
 
     await mergeChunks(chunkDir, finalPath, total);
     removeChunkDir(chunkDir);
+
+    // Verifikasi isi file hasil merge (magic bytes): ekstensi dan mimetype
+    // yang dikirim klien bisa dinego, isi binar-nya tidak.
+    const detectedType = detectFileType(finalPath);
+    if (!DOCUMENT_TYPES.has(detectedType)) {
+      fs.unlinkSync(finalPath);
+      throw new AppError('Isi file bukan PDF atau PowerPoint yang valid', 400);
+    }
 
     return res.json({
       status: 'success',
