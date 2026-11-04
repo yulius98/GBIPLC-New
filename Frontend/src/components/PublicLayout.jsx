@@ -8,6 +8,32 @@ import useDataGembala from '../hooks/useDataGembala'
 import WhatsAppFab from './WhatsAppFab'
 import MapFab from './MapFab'
 
+/**
+ * Link akun sesuai role di navbar/footer publik:
+ * jemaat → kelola data diri, pengurus → panel admin, tamu → registrasi.
+ */
+function AccountNav({ role, onClick = () => {} }) {
+  if (role === 'jemaat') {
+    return (
+      <NavLink to="/data-saya" onClick={onClick}>
+        Data Saya
+      </NavLink>
+    )
+  }
+  if (role === 'pengurus') {
+    return (
+      <NavLink to="/dashboard" onClick={onClick}>
+        Dashboard
+      </NavLink>
+    )
+  }
+  return (
+    <NavLink to="/register" onClick={onClick}>
+      Registrasi
+    </NavLink>
+  )
+}
+
 export default function PublicLayout() {
   const { user, logout } = useAuth()
   const seo = useSeo()
@@ -32,9 +58,15 @@ export default function PublicLayout() {
 
     let visitorId = localStorage.getItem('gbipc_visitor_id')
     if (!visitorId) {
+      // CSPRNG (S2245): crypto.randomUUID bila tersedia (secure context),
+      // fallback crypto.getRandomValues — keduanya kriptografis, bukan Math.random.
       visitorId =
         crypto?.randomUUID?.() ??
-        `v-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        (function randomVisitorId() {
+          const bytes = new Uint8Array(16)
+          crypto.getRandomValues(bytes)
+          return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+        })()
       localStorage.setItem('gbipc_visitor_id', visitorId)
     }
 
@@ -49,6 +81,9 @@ export default function PublicLayout() {
 
   const navClass = `navbar navbar--public ${scrolled ? 'navbar--scrolled' : ''}`
 
+  // Logo situs: gambar OG di-upload di Admin → Setting; fallback "GBI" bila kosong
+  const logoUrl = seo.ogImage || ''
+
   return (
     <div className="layout layout--public">
       <header className={navClass}>
@@ -57,8 +92,13 @@ export default function PublicLayout() {
           className="navbar__brand"
           onClick={() => setMenuOpen(false)}
         >
-          <span className="navbar__brand-mark">GBI</span>
-          GBI PLC
+          <span className="navbar__brand-mark">
+            {logoUrl ? (
+              <img className="navbar__brand-logo" src={logoUrl} alt={`Logo ${seo.church.name}`} />
+            ) : (
+              'GBI'
+            )}
+          </span>{' '}GBI PLC
         </NavLink>
         <nav
           className={`navbar__links ${menuOpen ? "navbar__links--open" : ""}`}
@@ -78,7 +118,7 @@ export default function PublicLayout() {
           <NavLink to="/kontak" onClick={() => setMenuOpen(false)}>
             Kontak
           </NavLink>
-          {user?.role === 'jemaat' && (
+          {user && (
             <>
               <NavLink to="/gemar-alkitab" onClick={() => setMenuOpen(false)}>
                 Gemar Alkitab
@@ -88,15 +128,7 @@ export default function PublicLayout() {
               </NavLink>
             </>
           )}
-          {user?.role === 'jemaat' ? (
-            <NavLink to="/data-saya" onClick={() => setMenuOpen(false)}>
-              Data Saya
-            </NavLink>
-          ) : (
-            <NavLink to="/register" onClick={() => setMenuOpen(false)}>
-              Registrasi
-            </NavLink>
-          )}
+          <AccountNav role={user?.role} onClick={() => setMenuOpen(false)} />
         </nav>
         <div className="navbar__user">
           {user ? (
@@ -176,12 +208,8 @@ export default function PublicLayout() {
                 <NavLink to="/life-group">Life Group</NavLink>
                 <NavLink to="/tentang">Tentang Kami</NavLink>
                 <NavLink to="/kontak">Kontak</NavLink>
-                {user?.role === 'jemaat' ? (
-                <NavLink to="/data-saya">Data Saya</NavLink>
-              ) : (
-                <NavLink to="/register">Registrasi</NavLink>
-              )}
-              <NavLink to="/login">Login</NavLink>
+                <AccountNav role={user?.role} />
+                <NavLink to="/login">Login</NavLink>
               </div>
             </div>
             <div>

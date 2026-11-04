@@ -83,9 +83,12 @@ async function updateSeo(req, res) {
     }
   }
 
-  if (req.file && req.file.fieldname === 'og_image') {
+  // Multer dipasang via uploadFields()).fields() -> file ada di req.files,
+  // bukan req.file (req.file hanya terisi pada mode .single()).
+  const ogFile = req.files?.og_image?.[0] || req.file;
+  if (ogFile) {
     const existing = await prisma.tblSeoSetting.findUnique({ where: { id: 1 } });
-    data.og_image = fileUploadService.replaceFile(req.file, {
+    data.og_image = fileUploadService.replaceFile(ogFile, {
       subDirectory: 'seo',
       oldFilePath: existing?.og_image,
     });

@@ -48,18 +48,6 @@ function mapToConfig(row = {}) {
         instagram: s("instagram"),
         facebook: s("facebook"),
       },
-
-      pelayanan: {
-        title: s("pelayanan_title") || defaultSeo.church.pelayanan.title,
-        description:
-          s("pelayanan_description") || defaultSeo.church.pelayanan.description,
-        buttonLabel:
-          s("pelayanan_button_label") ||
-          defaultSeo.church.pelayanan.buttonLabel,
-        whatsappMessage:
-          s("pelayanan_whatsapp_message") ||
-          defaultSeo.church.pelayanan.whatsappMessage,
-      },
     },
   };
 }
@@ -75,6 +63,20 @@ export function SeoProvider({ children }) {
       .then((res) => setSeo(mapToConfig(res.data?.data)))
       .catch(() => {})
   }, [])
+
+  // Gambar OG dikelola di Admin → Setting dipakai juga sebagai favicon situs.
+  // Bila belum ada upload, default favicon.svg dari index.html tetap dipakai.
+  useEffect(() => {
+    if (!seo.ogImage) return
+    let link = document.querySelector('link[rel="icon"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'icon'
+      document.head.appendChild(link)
+    }
+    link.type = 'image/webp'
+    link.href = seo.ogImage
+  }, [seo.ogImage])
 
   return <SeoContext.Provider value={seo}>{children}</SeoContext.Provider>
 }

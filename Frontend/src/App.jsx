@@ -23,6 +23,7 @@ import AdminSaatTeduhPage from './pages/admin/AdminSaatTeduhPage'
 import AdminIbadahRayaPage from './pages/admin/AdminIbadahRayaPage'
 import AdminKunjunganPage from './pages/admin/AdminKunjunganPage'
 import AdminSettingPage from './pages/admin/AdminSettingPage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
 
 function App() {
   return (
@@ -90,6 +91,7 @@ function App() {
         <Route path="/dashboard/saat-teduh" element={<AdminSaatTeduhPage />} />
         <Route path="/dashboard/ibadah-raya" element={<AdminIbadahRayaPage />} />
         <Route path="/dashboard/kunjungan" element={<AdminKunjunganPage />} />
+        <Route path="/dashboard/users" element={<AdminUsersPage />} />
         <Route path="/dashboard/setting" element={<AdminSettingPage />} />
       </Route>
 

@@ -147,6 +147,115 @@ const usersController = {
   },
 
   /**
+   * GET /api/admin/users (pengurus)
+   * Daftar user untuk panel admin: paging, pencarian ?q= (nama/email),
+   * dan filter ?role= (jemaat|pengurus|pendeta). Soft-deleted tidak ditampilkan.
+   */
+  async adminList(req, res) {
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const rawSize = Number.parseInt(req.query.pageSize, 10);
+    const pageSize = Number.isInteger(rawSize) ? Math.min(100, Math.max(1, rawSize)) : 10;
+
+    const q = String(req.query.q || '').trim();
+    const role = String(req.query.role || '').trim();
+
+    const where = { deleted_at: null };
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+    if (Object.values(UserRole).includes(role)) {
+      where.role = role;
+    }
+
+    const orderBy = { name: 'asc' };
+    const [items, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return res.json({
+      status: true,
+      message: 'Data ditemukan',
+      data: items.map(serializeUser),
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    });
+  },
+
+  /**
+   * PUT /api/admin/users/:id (pengurus)
+   * Ubah role user. :id menerima public_id (UUID) atau id intern (Int).
+   * Role diri sendiri tidak boleh diubah agar pengurus tidak terkunci dari panel.
+   */
+  async adminUpdateRole(req, res) {
+    const role = String(req.body?.role || '').trim();
+    if (!Object.values(UserRole).includes(role)) {
+      throw new AppError('Role tidak valid', 422);
+    }
+
+    const selector = resolveRowId(req.params.id);
+    if (!selector) throw new AppError('User tidak ditemukan', 404);
+
+    const existing = await prisma.user.findUnique({ where: selector });
+    if (!existing) throw new AppError('User tidak ditemukan', 404);
+
+    if (req.user && existing.id === req.user.id) {
+      throw new AppError('Role akun sendiri tidak dapat diubah', 422);
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: existing.id },
+      data: { role },
+    });
+
+    return apiResponse.success(res, {
+      message: 'Role berhasil diubah',
+      data: serializeUser(updated),
+    });
+  },
+
+  /**
+   * DELETE /api/admin/users/:id (pengurus)
+   * Soft delete user (deleted_at). Akun sendiri tidak dapat dihapus.
+   */
+  async adminRemove(req, res) {
+    const selector = resolveRowId(req.params.id);
+    if (!selector) throw new AppError('User tidak ditemukan', 404);
+
+    const existing = await prisma.user.findUnique({ where: selector });
+    if (!existing) throw new AppError('User tidak ditemukan', 404);
+
+    if (req.user && existing.id === req.user.id) {
+      throw new AppError('Akun sendiri tidak dapat dihapus', 422);
+    }
+
+    if (existing.deleted_at) {
+      throw new AppError('User sudah dihapus sebelumnya', 410);
+    }
+
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { deleted_at: new Date() },
+    });
+
+    return apiResponse.success(res, {
+      message: 'User berhasil dihapus',
+    });
+  },
+
+  /**
    * GET /api/birthday
    * Daftar jemaat yang berulang tahun bulan ini.
    * Query ?months=2 untuk menyertakan bulan sebelumnya juga.

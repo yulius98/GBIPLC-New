@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../../api/client'
+import { toWebp } from '../../utils/image'
 import ServiceScheduleSection from '../../components/ServiceScheduleSection'
 import GembalaSection from '../../components/GembalaSection'
 import TentangKamiSection from '../../components/TentangKamiSection'
@@ -24,31 +25,24 @@ const EMPTY_FORM = {
   address_country: "",
   instagram: "",
   facebook: "",
-  // Pelayanan / Konsultasi
-  pelayanan_title: "",
-  pelayanan_description: "",
-  pelayanan_button_label: "",
-  pelayanan_whatsapp_message: "",
 }
 
 /**
  * Tab halaman Setting. Tab ber-ID di SEO_TABS form-nya satu kesatuan
  * (disimpan lewat PUT /admin/seo); sisanya komponen mandiri dengan
  * API masing-masing.
- */
-const TABS = [
+ */const TABS = [
   { id: 'gereja', label: 'Data Gereja' },
   { id: 'og', label: 'Gambar Open Graph' },
   { id: 'gembala', label: 'Data Gembala' },
   { id: 'jadwal', label: 'Jadwal Ibadah' },
   { id: 'tentang', label: 'Tentang Kami' },
-  { id: 'pelayanan', label: 'Pelayanan / Konsultasi' },
   { id: 'sosmed', label: 'Sosial Media' },
   { id: 'seo', label: 'Setting SEO' },
 ]
 
 // Tab yang datanya disimpan lewat endpoint /admin/seo (satu form)
-const SEO_TABS = ['seo', 'og', 'gereja', 'pelayanan', 'sosmed']
+const SEO_TABS = ['seo', 'og', 'gereja', 'sosmed']
 
 function Field({ name, label, type = 'text', form, onChange, placeholder, rows, hint }) {
   return (
@@ -121,7 +115,11 @@ export default function AdminSettingPage() {
       for (const [key, value] of Object.entries(form)) {
         if (value) body.append(key, value)
       }
-      if (ogImage instanceof File) body.append('og_image', ogImage)
+      if (ogImage instanceof File) {
+        // Konversi ke WebP maksimal 50KB sebelum dikirim ke server
+        const blob = await toWebp(ogImage, 50)
+        body.append('og_image', new File([blob], 'og-image.webp', { type: 'image/webp' }))
+      }
       const { data } = await api.put('/admin/seo', body)
       setNotice(data?.message || 'Setting SEO berhasil disimpan.')
     } catch (err) {
@@ -167,7 +165,7 @@ export default function AdminSettingPage() {
         ))}
       </nav>
 
-      {/* Tab berbasis form /admin/seo: setting SEO, OG, gereja, pelayanan & sosmed */}
+      {/* Tab berbasis form /admin/seo: setting SEO, OG, gereja & sosmed */}
       {SEO_TABS.includes(activeTab) && (
         <form className="admin-form settings-form" onSubmit={handleSubmit}>
           {activeTab === 'seo' && (
@@ -250,6 +248,10 @@ export default function AdminSettingPage() {
                       Belum ada gambar. Kosongkan untuk memakai favicon.svg.
                     </small>
                   )}
+                  <small className="muted">
+                    Gambar dikonversi otomatis ke WebP (maks. 50KB) lalu dipakai
+                    sebagai favicon dan logo di navbar situs.
+                  </small>
                 </div>
               </div>
             </section>
@@ -322,45 +324,6 @@ export default function AdminSettingPage() {
                   form={form}
                   onChange={handleChange}
                   placeholder="ID"
-                />
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'pelayanan' && (
-            <section className="card settings-section">
-              <h3 className="settings-section__title">Pelayanan / Konsultasi</h3>
-              <div className="settings-section__grid">
-                <Field
-                  name="pelayanan_title"
-                  label="Judul"
-                  form={form}
-                  onChange={handleChange}
-                  placeholder="Konsultasi / Pelayanan"
-                />
-                <Field
-                  name="pelayanan_description"
-                  label="Deskripsi"
-                  type="textarea"
-                  rows={4}
-                  form={form}
-                  onChange={handleChange}
-                />
-                <Field
-                  name="pelayanan_button_label"
-                  label="Teks Tombol"
-                  form={form}
-                  onChange={handleChange}
-                  placeholder="Kirim Pesan"
-                />
-                <Field
-                  name="pelayanan_whatsapp_message"
-                  label="Pesan WhatsApp Otomatis"
-                  type="textarea"
-                  rows={3}
-                  form={form}
-                  onChange={handleChange}
-                  hint="Pesan awal yang terisi otomatis saat pengunjung menekan tombol."
                 />
               </div>
             </section>

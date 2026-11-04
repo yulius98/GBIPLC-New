@@ -6,6 +6,7 @@ import authorize from '../../middlewares/authorize.js';
 import { uploadFields, uploadDocument } from '../../middlewares/upload.js';
 import { ROLES } from '../../constants/roles.js';
 import settingsController from '../settings/settings.controller.js';
+import usersController from '../users/users.controller.js';
 
 /**
  * Modul admin (pengurus): CRUD untuk kelola konten website.
@@ -120,6 +121,11 @@ router.post('/materi-kotbah', ...auth, uploadDocument([{ name: 'filename', maxCo
 router.get('/materi-kotbah/:id', ...auth, materiKotbahController.get);
 router.put('/materi-kotbah/:id', ...auth, uploadDocument([{ name: 'filename', maxCount: 1 }]), materiKotbahController.update);
 router.delete('/materi-kotbah/:id', ...auth, materiKotbahController.remove);
+
+// ---------- Kelola User ----------
+router.get('/users', ...auth, usersController.adminList);
+router.put('/users/:id', ...auth, usersController.adminUpdateRole);
+router.delete('/users/:id', ...auth, usersController.adminRemove);
 
 // ---------- Setting SEO ----------
 router.get('/seo', ...auth, settingsController.getSeo);

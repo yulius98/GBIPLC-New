@@ -41,14 +41,6 @@ const seo = {
       instagram: "",
       facebook: "",
     },
-    pelayanan: {
-      title: "Konsultasi / Pelayanan",
-      description:
-        "Butuh dukungan doa, konseling, atau ingin bergabung dalam pelayanan? Tim pelayanan kami siap membantu Anda pada jam kerja gereja.",
-      buttonLabel: "Kirim Pesan",
-      whatsappMessage:
-        "Halo, saya ingin bertanya tentang pelayanan di GBI Philadelphia Life Center.",
-    },
   },
 };
 

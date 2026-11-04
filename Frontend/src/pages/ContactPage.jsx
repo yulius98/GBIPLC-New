@@ -11,7 +11,6 @@ export default function ContactPage() {
   const seo = useSeo()
   const { schedules, rawSchedules } = useServiceSchedules()
   const church = seo.church
-  const pelayanan = church.pelayanan || {}
 
   // Nomor yang ditampilkan: telepon, atau nomor WhatsApp bila telepon kosong
   const displayPhone = church.telephone || (church.whatsapp ? `+${church.whatsapp}` : '')
@@ -34,12 +33,6 @@ export default function ContactPage() {
   const waLink = buildWaLink(
     church.whatsapp,
     `Halo, saya ingin bertanya tentang ${church.name}.`,
-  )
-
-  const pelayananLink = buildWaLink(
-    church.whatsapp,
-    pelayanan.whatsappMessage ||
-      `Halo, saya ingin bertanya tentang pelayanan di ${church.name}.`,
   )
 
   // Jadwal dari tabel tbl_service_schedules (fallback ke setting SEO
@@ -126,21 +119,6 @@ export default function ContactPage() {
                     </div>
                   ))}
                 </dl>
-              </section>
-            )}
-
-            {(pelayanan.title || pelayanan.description) && (
-              <section className="card contact-card">
-                <h2>{pelayanan.title}</h2>
-                <p className="contact-card__text">{pelayanan.description}</p>
-                <a
-                  className="btn btn--primary"
-                  href={pelayananLink}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {pelayanan.buttonLabel || 'Kirim Pesan'}
-                </a>
               </section>
             )}
           </div>
