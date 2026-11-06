@@ -130,6 +130,16 @@ export const IconGroup = (props) => (
   </SvgIcon>
 )
 
+/* Dua kepala + dua tubuh bertemu: komunitas kecil (life group/komsel). */
+export const IconLifeGroup = (props) => (
+  <SvgIcon {...props}>
+    <circle cx="9" cy="7.5" r="3" />
+    <circle cx="15" cy="7.5" r="3" />
+    <path d="M3.5 20c.6-2.8 2.6-4.5 5.5-4.5 1.1 0 2.1.25 3 .8" />
+    <path d="M12 16.3c.9-.55 1.9-.8 3-.8 2.9 0 4.9 1.7 5.5 4.5" />
+  </SvgIcon>
+)
+
 export const IconCake = (props) => (
   <SvgIcon {...props}>
     <path d="M4.5 21h15" />

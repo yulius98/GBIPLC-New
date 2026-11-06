@@ -45,6 +45,15 @@ const readingScheduleController = createCrudController({
   transform: (d) => ({ ...d, day: d.day !== undefined ? Number(d.day) : undefined }),
 });
 
+const lifeGroupController = createCrudController({
+  model: prisma.tblKomsel,
+  // Sama dengan halaman publik /life-group: urut abjad nama komsel
+  orderBy: { nama_komsel: 'asc' },
+  allowedFields: ['nama_komsel', 'ketua_komsel', 'no_telp', 'alamat'],
+  resourceName: 'Life Group',
+  searchFields: ['nama_komsel', 'ketua_komsel'],
+});
+
 const pastorNoteController = createCrudController({
   model: prisma.tblPastorNote,
   orderBy: { tgl_note: 'desc' },
@@ -134,6 +143,13 @@ router.delete('/materi-kotbah/:id', ...auth, materiKotbahController.remove);
 router.get('/users', ...auth, usersController.adminList);
 router.put('/users/:id', ...auth, usersController.adminUpdateRole);
 router.delete('/users/:id', ...auth, usersController.adminRemove);
+
+// ---------- Life Group (komsel) ----------
+router.get('/lifegroup', ...auth, lifeGroupController.list);
+router.post('/lifegroup', ...auth, lifeGroupController.create);
+router.get('/lifegroup/:id', ...auth, lifeGroupController.get);
+router.put('/lifegroup/:id', ...auth, lifeGroupController.update);
+router.delete('/lifegroup/:id', ...auth, lifeGroupController.remove);
 
 // ---------- Setting SEO ----------
 router.get('/seo', ...auth, settingsController.getSeo);
