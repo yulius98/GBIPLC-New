@@ -1,5 +1,7 @@
 # ---------- Build stage ----------
-FROM node:20-alpine AS builder
+# Node 24 (Krypton): LTS aktif didukung s/d 30 Apr 2028.
+# Node 20 sudah EOL (30 Apr 2026) dan tidak lagi menerima security fix.
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -14,7 +16,9 @@ COPY prisma.config.ts ./
 RUN npx prisma generate
 
 # ---------- Runtime stage ----------
-FROM node:20-alpine AS runner
+# Samakan dengan build stage supaya engine Prisma & binary yang dibangun
+# konsisten antara build dan runtime.
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

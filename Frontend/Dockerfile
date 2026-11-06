@@ -1,5 +1,7 @@
 # ---------- Build stage ----------
-FROM node:20-alpine AS builder
+# Node 24 (LTS s/d 30 Apr 2028); Node 20 sudah EOL 30 Apr 2026.
+# Samakan dengan Backend/Dockerfile supaya toolchain build konsisten.
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
