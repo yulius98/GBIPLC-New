@@ -78,10 +78,12 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: gbiplc-cloudflared
     restart: unless-stopped
-    env_file:
-      - ./Backend/.env
+    # Keamanan: jangan muat seluruh Backend/.env di container tunnel — itu
+    # membocorkan secret DB/JWT/SMTP ke proses yang hanya butuh token tunnel.
+    # Token kini wajib di .env root (lihat .env.example); ':?' membuat compose
+    # menolak start bila token belum diset, bukan diam-diam memakai kosong.
     environment:
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN di .env root (bukan Backend/.env)}
     command: tunnel --no-autoupdate run
     depends_on:
       - backend

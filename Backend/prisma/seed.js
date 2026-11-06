@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import 'dotenv/config';
 import DEFAULT_SEO from '../src/modules/settings/seoDefaults.js';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -70,10 +71,26 @@ async function seedReadingSchedules() {
 
 /**
  * Buat user admin/pengurus untuk testing login.
+ * Keamanan: tidak ada lagi password default hardcoded ('Admin123!') —
+ * password lemah yang bisa ditebak jika seed dijalankan tanpa pengaturan.
+ * - Produksi: SEED_ADMIN_EMAIL + SEED_ADMIN_PASSWORD wajib, seed ditolak bila
+ *   tidak ada (fail-closed).
+ * - Development: password acak dibuat bila tidak diset, lalu dicetak ke log.
  */
 async function seedAdminUser() {
-  const email = process.env.SEED_ADMIN_EMAIL || 'admin@gbiplc.test';
-  const password = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password =
+    process.env.SEED_ADMIN_PASSWORD ||
+    (process.env.NODE_ENV === 'production'
+      ? null
+      : crypto.randomBytes(18).toString('base64url'));
+
+  if (!email || !password) {
+    throw new Error(
+      '[SEED] Ditolak: set SEED_ADMIN_EMAIL dan SEED_ADMIN_PASSWORD di .env. ' +
+        'Tidak ada password default lagi.',
+    );
+  }
 
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
