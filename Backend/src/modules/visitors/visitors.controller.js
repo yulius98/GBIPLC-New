@@ -18,9 +18,15 @@ const visitorController = {
    */
   async track(req, res) {
     const visitorId = String(req.body?.visitor_id ?? '').trim();
+    // IP tepercaya (sama dengan middlewares/rateLimit.js): utamakan
+    // CF-Connecting-IP yang hanya disetel edge Cloudflare. X-Forwarded-For
+    // dikirim klien dan mudah dipalsukan — memakainya langsung membuat
+    // penyerang bisa menggandakan statistik pengunjung dari satu IP.
+    const cf = req.headers?.['cf-connecting-ip'];
     const forwarded = req.headers['x-forwarded-for'];
     const ip = String(
-      (forwarded ? String(forwarded).split(',')[0] : '') ||
+      (typeof cf === 'string' && cf.trim() !== '' ? cf : '') ||
+        (forwarded ? String(forwarded).split(',')[0] : '') ||
         req.socket?.remoteAddress ||
         ''
     ).trim();
