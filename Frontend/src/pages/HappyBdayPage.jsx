@@ -4,8 +4,9 @@ import { useSeo } from '../context/SeoContext'
 import { useSEO } from '../utils/seo'
 
 function formatBirthday(value) {
+  // Hanya tanggal & bulan lahir (tanpa tahun) agar fokus kartu tetap "ulang tahun saat ini",
+  // sesuai halaman ini: tidak menampilkan usia/identitas tahun lahir jemaat.
   return new Date(value).toLocaleDateString('id-ID', {
-    year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
