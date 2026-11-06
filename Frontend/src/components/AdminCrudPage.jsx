@@ -94,6 +94,11 @@ export default function AdminCrudPage({
     setForm((f) => ({ ...f, [name]: files?.[0] || null }))
   }
 
+  function handleToggle(e) {
+    const { name, checked } = e.target
+    setForm((f) => ({ ...f, [name]: checked }))
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setNotice('')
@@ -101,8 +106,13 @@ export default function AdminCrudPage({
 
     const errors = {}
     for (const field of fields) {
-      if (field.required && !form[field.name]) {
+      // Checkbox boolean tidak ikut validasi "required" (false bukan berarti kosong)
+      if (field.required && field.type !== 'checkbox' && !form[field.name]) {
         errors[field.name] = [`${field.label} wajib diisi`]
+      }
+      // File wajib hanya saat menambah data baru (saat edit, file lama dipertahankan)
+      if (field.type === 'file' && field.requiredCreate && !editing && !(form[field.name] instanceof File)) {
+        errors[field.name] = [`${field.label} wajib dipilih`]
       }
     }
     if (Object.keys(errors).length > 0) {
@@ -120,14 +130,23 @@ export default function AdminCrudPage({
           const value = form[field.name]
           if (field.type === 'file') {
             if (value instanceof File) {
-              if (field.webp) {
+              const isImage = (value.type || '').startsWith('image/')
+              if (field.webp && isImage) {
+                // Konversi hanya untuk gambar; video diunggah apa adanya
                 const blob = await toWebp(value, field.maxSizeKB || 250)
-                const baseName = String(value.name || 'gambar').replace(/\.[^.]+$/, '')
-                payload.append(field.name, new File([blob], `${baseName}.webp`, { type: 'image/webp' }))
+                if (blob) {
+                  const baseName = String(value.name || 'gambar').replace(/\.[^.]+$/, '')
+                  payload.append(field.name, new File([blob], `${baseName}.webp`, { type: 'image/webp' }))
+                } else {
+                  payload.append(field.name, value)
+                }
               } else {
                 payload.append(field.name, value)
               }
             }
+          } else if (field.type === 'checkbox') {
+            // Kirim eksplisit agar backend bisa membedakan true/false
+            payload.append(field.name, value ? 'true' : 'false')
           } else if (value !== '' && value != null) {
             payload.append(field.name, field.type === 'number' ? Number(value) : value)
           }
@@ -136,7 +155,9 @@ export default function AdminCrudPage({
         payload = {}
         for (const field of fields) {
           const value = form[field.name]
-          if (value !== '' && value != null) {
+          if (field.type === 'checkbox') {
+            payload[field.name] = Boolean(value)
+          } else if (value !== '' && value != null) {
             payload[field.name] = field.type === 'number' ? Number(value) : value
           }
         }
@@ -328,12 +349,19 @@ export default function AdminCrudPage({
                           accept={field.accept}
                           onChange={handleFile}
                         />
-                        {hasFileField && editing?.[field.name] && (
+                        {hasFileField && editing?.[field.oldFileKey || field.name] && (
                           <small className="muted">
-                            File lama: {editing[field.name]}
+                            File lama: {editing[field.oldFileKey || field.name]}
                           </small>
                         )}
                       </>
+                    ) : field.type === 'checkbox' ? (
+                      <input
+                        type="checkbox"
+                        name={field.name}
+                        checked={Boolean(form[field.name])}
+                        onChange={handleToggle}
+                      />
                     ) : (
                       <input
                         type={field.type || 'text'}
@@ -348,6 +376,7 @@ export default function AdminCrudPage({
                     {fieldErrors[field.name] && (
                       <small className="field__error">{fieldErrors[field.name][0]}</small>
                     )}
+                    {field.hint && <small className="muted">{field.hint}</small>}
                   </label>
                 ))}
 

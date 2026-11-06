@@ -176,7 +176,8 @@ Server berjalan di `http://localhost:8000`. Cek `GET /health`.
 ### Pendukung (baru)
 | Method | Path | Auth |
 |--------|------|------|
-| GET | `/api/kunjungan`, `/api/toko-jemaat`, `/api/popup-ads`, `/api/notofications`, `/api/materi-komsel` | - |
+| GET | `/api/toko-jemaat`, `/api/popup-ads`, `/api/notofications`, `/api/materi-komsel` | - |
+| GET | `/api/kunjungan`, `/api/kunjungan/:id` | JWT + pengurus (data kunjungan pastoral internal) |
 | GET | `/api/materi-komsel/getlink?tgl_komsel=&judul=` | - |
 | POST/PUT/DELETE | di atas `/:id` | JWT + pengurus |
 

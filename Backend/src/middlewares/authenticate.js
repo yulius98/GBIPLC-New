@@ -53,6 +53,11 @@ async function authenticate(req, res, next) {
       return next(new AppError('User tidak ditemukan.', 401));
     }
 
+    // Sesi dicabut massal (mis. setelah reset password): token lama ditolak.
+    if (tokenService.areUserSessionsRevoked(user.id, payload.iat)) {
+      return next(new AppError('Sesi sudah diakhiri. Silakan login kembali.', 401));
+    }
+
     req.user = user;
     next();
   } catch (err) {
@@ -98,7 +103,12 @@ async function optionalAuthenticate(req, res, next) {
       },
     });
 
-    if (user) req.user = user;
+    if (
+      user &&
+      !tokenService.areUserSessionsRevoked(user.id, payload.iat)
+    ) {
+      req.user = user;
+    }
   } catch {
     // Token invalid/expired: abaikan, perlakukan sebagai request publik.
   }

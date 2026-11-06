@@ -1,5 +1,4 @@
 import axios from 'axios';
-import https from 'https';
 import NodeCache from 'node-cache';
 import env from '../config/env.js';
 import { bookShortCode, bookFullName, bookNumber, bookFolder, oldTestamentBooks, audioFileCode } from '../constants/bibleBooks.js';
@@ -15,9 +14,9 @@ const cache = new NodeCache({
 
 const ALKITAB_MOBI_BASE = 'https://alkitab.mobi/tb';
 const SABDA_AUDIO_BASE = 'https://media.sabda.org/alkitab_audio/tb_alkitabsuara';
-
-// Akses HTTP mirip Laravel lama (verify_peer false) agar kompatibel
-const httpAgent = new https.Agent({ rejectUnauthorized: false });
+// TLS diverifikasi penuh (default axios/Node). Kabar dari kode Laravel lama
+// (verify_peer false) tidak lagi diperlukan: sertifikat alkitab.mobi valid.
+// Menonaktifkan verifikasi membuka celah MITM pada konten Alkitab.
 
 /**
  * Ambil HTML pasal dari alkitab.mobi dengan cache.
@@ -34,7 +33,6 @@ async function fetchChapterHtml(shortCode, chapter) {
   try {
     const res = await axios.get(url, {
       timeout: 15000,
-      httpsAgent: httpAgent,
       responseType: 'text',
     });
     const html = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);

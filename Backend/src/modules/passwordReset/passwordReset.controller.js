@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '../../utils/prisma.js';
 import mailService from '../../services/mail.service.js';
+import tokenService from '../../services/token.service.js';
 const RESET_TOKEN_HOURS = 1; // token berlaku 1 jam
 
 /**
@@ -71,10 +72,14 @@ const passwordResetController = {
       });
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { email },
       data: { password: await bcrypt.hash(password, 12) },
     });
+
+    // Password berubah: cabut semua access token aktif milik user ini
+    // agar sesi di perangkat lain (token yang dicuri penyerang) mati.
+    tokenService.revokeAllForUser(user.id);
 
     await prisma.passwordResetToken.delete({ where: { email } });
 

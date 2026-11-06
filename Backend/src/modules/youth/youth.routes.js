@@ -14,11 +14,22 @@ import { ROLES } from '../../constants/roles.js';
 
 const adminAuth = [...[authenticate, authorize(...ROLES.pengurus)]];
 
+// Koersi nilai dari FormData (semua value string) / JSON ke tipe Prisma.
+const toBool = (v) => v === true || v === 'true' || v === 1 || v === '1';
+const boolField = (d, key) =>
+  d[key] !== undefined ? { [key]: toBool(d[key]) } : {};
+const numField = (d, key) =>
+  d[key] !== undefined && d[key] !== null && d[key] !== ''
+    ? { [key]: Number(d[key]) }
+    : {};
+const dateField = (d, key) => ({ [key]: d[key] ? new Date(d[key]) : undefined });
+
 const programsController = createCrudController({
   model: prisma.tblYouthProgram,
   orderBy: { order: 'asc' },
   allowedFields: ['title', 'description', 'icon', 'frequency', 'category', 'is_active', 'order'],
   resourceName: 'Program',
+  transform: (d) => ({ ...d, ...numField(d, 'order'), ...boolField(d, 'is_active') }),
 });
 
 const galleriesController = createCrudController({
@@ -35,6 +46,12 @@ const galleriesController = createCrudController({
   ],
   fileFields: { file_path: 'youth-galleries', thumbnail_path: 'youth-galleries' },
   resourceName: 'Galeri',
+  transform: (d) => ({
+    ...d,
+    ...dateField(d, 'event_date'),
+    ...numField(d, 'order'),
+    ...boolField(d, 'is_featured'),
+  }),
 });
 
 const schedulesController = createCrudController({
@@ -55,6 +72,12 @@ const schedulesController = createCrudController({
     'order',
   ],
   resourceName: 'Jadwal',
+  transform: (d) => ({
+    ...d,
+    ...dateField(d, 'event_date'),
+    ...numField(d, 'order'),
+    ...boolField(d, 'is_active'),
+  }),
 });
 
 const galleryUpload = uploadFields([

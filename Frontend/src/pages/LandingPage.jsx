@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api, { MEDIA_URL } from '../api/client'
 import { useSeo } from '../context/SeoContext'
 import useServiceSchedules from '../hooks/useServiceSchedules'
+import useTentang from '../hooks/useTentang'
 import { useSEO } from '../utils/seo'
 import { buildChurchJsonLd } from "../utils/churchJsonLd";
 import HeroCarousel from "../components/HeroCarousel";
@@ -18,6 +20,7 @@ function formatDate(value) {
 export default function LandingPage() {
   const seo = useSeo();
   const { rawSchedules } = useServiceSchedules();
+  const { tentang, pelayanan, loading: pelayananLoading } = useTentang();
 
   const churchJsonLd = useMemo(
     () => buildChurchJsonLd(seo, "/", rawSchedules),
@@ -34,8 +37,8 @@ export default function LandingPage() {
 
   const [carousel, setCarousel] = useState([]);
   const [pastorNote, setPastorNote] = useState(null);
+  const [noteUnavailable, setNoteUnavailable] = useState(false);
   const [events, setEvents] = useState([]);
-  const [error, setError] = useState("");
   // const [slide, setSlide] = useState(0)
 
   useEffect(() => {
@@ -49,24 +52,40 @@ export default function LandingPage() {
       .then((res) => setEvents(res.data.data || []))
       .catch(() => {});
 
-    api
-      .get("/pastornote")
-      .then((res) => setPastorNote(res.data.data || null))
-      .catch((err) => {
-        if (err.response?.status !== 404) {
-          setError(err.response?.data?.message || "Gagal memuat saat teduh.");
-        }
-      });
+    // Saat Teduh: tabel kosong memang dibalas backend dengan 404 (normal),
+    // sedangkan kegagalan non-404 (mis. backend sedang restart saat dev dengan
+    // node --watch) dicoba ulang beberapa kali dulu; kalau tetap gagal,
+    // tampilkan pesan santai, bukan error.
+    let cancelled = false;
+    const timers = [];
+    const delays = [0, 1500, 4000];
+
+    const loadPastorNote = (attempt = 0) => {
+      api
+        .get("/pastornote")
+        .then((res) => {
+          if (!cancelled) setPastorNote(res.data.data || null);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          if (err.response?.status === 404) return; // memang belum ada data
+          if (attempt + 1 < delays.length) {
+            timers.push(setTimeout(() => loadPastorNote(attempt + 1), delays[attempt + 1]));
+            return;
+          }
+          setNoteUnavailable(true);
+        });
+    };
+
+    loadPastorNote();
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
   }, []);
 
-  useEffect(() => {
-    if (carousel.length <= 1) return;
-    const timer = setInterval(
-      () => setSlide((s) => (s + 1) % carousel.length),
-      5000,
-    );
-    return () => clearInterval(timer);
-  }, [carousel.length]);
+  // Rotasi slide ditangani internal oleh komponen HeroCarousel.
 
   return (
     <div className="landing">
@@ -93,8 +112,6 @@ export default function LandingPage() {
       )}
 
       <div className="container container--wide">
-        {error && <div className="alert alert--error">{error}</div>}
-
         {/* Section 2: Saat Teduh */}
         <section className="landing__section">
           <div className="section-head">
@@ -120,11 +137,42 @@ export default function LandingPage() {
               <p className="pastor-note__body">{pastorNote.note}</p>
             </article>
           ) : (
-            !error && <p className="muted">Belum ada saat teduh.</p>
+            <p className="muted">
+              {noteUnavailable
+                ? "Saat teduh belum tersedia, coba muat ulang halaman."
+                : "Belum ada saat teduh."}
+            </p>
           )}
         </section>
 
-        {/* Section 3: Event Gereja */}
+        {/* Section 3: Pelayanan Kami — data tbl_tentang_kami_pelayanan via /api/tentang */}
+        {!pelayananLoading && pelayanan.length > 0 && (
+          <section className="landing__section">
+            <div className="section-head">
+              <div>
+                <span className="section-head__eyebrow">Pelayanan Kami</span>
+                <h2 className="section-title">
+                  {tentang.pelayanan_judul || "Yang Kami Lakukan Bersama"}
+                </h2>
+              </div>
+              <Link to="/tentang" className="btn btn--soft">
+                Lihat Semua
+              </Link>
+            </div>
+            <div className="youth__programs">
+              {pelayanan.map((m) => (
+                <article className="card program-card" key={m.id ?? m.judul}>
+                  <div className="program-card__icon">{m.icon}</div>
+                  <h3>{m.judul}</h3>
+                  <p className="muted">{m.frekuensi}</p>
+                  <p>{m.deskripsi}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section 4: Event Gereja */}
         <section className="landing__section">
           <div className="section-head">
             <div>

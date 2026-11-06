@@ -265,6 +265,10 @@ function PelayananCardsSection() {
         return
       }
     }
+    if (form.deskripsi.length > 150) {
+      setError('Deskripsi maksimal 150 karakter.')
+      return
+    }
     setSaving(true)
     try {
       const payload = { ...form }
@@ -427,8 +431,12 @@ function PelayananCardsSection() {
                       value={form.deskripsi}
                       onChange={handleChange}
                       placeholder="Perayaan bersama keluarga besar GBI PLC…"
+                      maxLength={150}
                       required
                     />
+                    <small className="muted">
+                      Maksimal 150 karakter ({form.deskripsi.length}/150).
+                    </small>
                   </label>
 
                   <div className="admin-form__actions">

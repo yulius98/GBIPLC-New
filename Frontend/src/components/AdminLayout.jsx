@@ -6,6 +6,7 @@ import {
   IconBook,
   IconChurch,
   IconHeart,
+  IconGroup,
   IconSettings,
   IconUsers,
   IconGlobeExternal,
@@ -18,6 +19,7 @@ const MENU = [
   { to: '/dashboard/saat-teduh', label: 'Saat Teduh', icon: <IconBook size={18} /> },
   { to: '/dashboard/ibadah-raya', label: 'Ibadah Raya', icon: <IconChurch size={18} /> },
   { to: '/dashboard/kunjungan', label: 'Kunjungan', icon: <IconHeart size={18} /> },
+  { to: '/dashboard/youth', label: 'Youth', icon: <IconGroup size={18} /> },
   { to: '/dashboard/users', label: 'Kelola User', icon: <IconUsers size={18} /> },
   { to: '/dashboard/setting', label: 'Setting', icon: <IconSettings size={18} /> },
 ]

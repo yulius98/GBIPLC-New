@@ -22,6 +22,7 @@ import AdminKegiatanPage from './pages/admin/AdminKegiatanPage'
 import AdminSaatTeduhPage from './pages/admin/AdminSaatTeduhPage'
 import AdminIbadahRayaPage from './pages/admin/AdminIbadahRayaPage'
 import AdminKunjunganPage from './pages/admin/AdminKunjunganPage'
+import AdminYouthPage from './pages/admin/AdminYouthPage'
 import AdminSettingPage from './pages/admin/AdminSettingPage'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 
@@ -91,6 +92,7 @@ function App() {
         <Route path="/dashboard/saat-teduh" element={<AdminSaatTeduhPage />} />
         <Route path="/dashboard/ibadah-raya" element={<AdminIbadahRayaPage />} />
         <Route path="/dashboard/kunjungan" element={<AdminKunjunganPage />} />
+        <Route path="/dashboard/youth" element={<AdminYouthPage />} />
         <Route path="/dashboard/users" element={<AdminUsersPage />} />
         <Route path="/dashboard/setting" element={<AdminSettingPage />} />
       </Route>

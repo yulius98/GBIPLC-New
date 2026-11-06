@@ -52,7 +52,9 @@ services:
              node src/index.js"
 
     ports:
-      - "8001:8000"
+      # Terikat loopback: backend hanya dijangkau dari server sendiri (debug),
+      # bukan internet — menutupi spoof X-Forwarded-For / rate-limit bypass.
+      - "127.0.0.1:8001:8000"
 
   frontend:
     build:
@@ -66,7 +68,11 @@ services:
       - backend
 
     ports:
-      - "80:80"
+      # Terikat loopback: publik hanya lewat cloudflared tunnel. Jika port 80
+      # terbuka ke internet, klien langsung bisa memalsukan X-Forwarded-For
+      # dan melewati rate limit (CF-Connecting-IP pun tidak berlaku pada
+      # request yang tidak lewat Cloudflare).
+      - "127.0.0.1:80:80"
 
   cloudflared:
     image: cloudflare/cloudflared:latest

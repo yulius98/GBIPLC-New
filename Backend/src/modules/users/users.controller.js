@@ -5,7 +5,7 @@ import apiResponse from '../../utils/apiResponse.js';
 import AppError from '../../utils/AppError.js';
 import fileUploadService from '../../services/fileUpload.service.js';
 import resolveRowId from '../../utils/publicId.js';
-import { serializeUser } from './user.serializer.js';
+import { serializeUser, serializeBirthdayUser } from './user.serializer.js';
 import { UserRole } from '../../constants/roles.js';
 
 /**
@@ -13,6 +13,21 @@ import { UserRole } from '../../constants/roles.js';
  * dan tidak dapat diubah/dihapus lewat API.
  */
 const PROTECTED_ADMIN_NAME = 'Admin GBI';
+
+/**
+ * Anti-IDOR: endpoint /myprofile/:id adalah area pribadi. Hanya pemilik
+ * profil yang boleh mengaksesnya — role (jemaat/pengurus) tidak extend
+ * hak akses ke profil orang lain. Data profil orang lain (email, No. HP,
+ * alamat, riwayat kunjungan) hanya bisa dilihat pengurus lewat
+ * /api/admin/users.
+ * @param {object} existing  - user hasil query Prisma (target :id)
+ * @param {object} currentUser - req.user dari middleware authenticate
+ */
+function assertSelfProfile(existing, currentUser) {
+  if (!existing || !currentUser || existing.id !== currentUser.id) {
+    throw new AppError('Anda hanya dapat mengakses profil Anda sendiri', 403);
+  }
+}
 
 /**
  * Controller pengguna: registrasi jemaat, profil, dan ulang tahun.
@@ -78,6 +93,8 @@ const usersController = {
       throw new AppError('Data tidak ditemukan', 404);
     }
 
+    assertSelfProfile(user, req.user);
+
     return apiResponse.success(res, {
       message: 'Data ditemukan',
       data: serializeUser(user),
@@ -101,6 +118,8 @@ const usersController = {
       throw new AppError('Data tidak ditemukan', 404);
     }
 
+    assertSelfProfile(user, req.user);
+
     return apiResponse.success(res, {
       message: 'Data ditemukan',
       data: serializeUser(user),
@@ -122,6 +141,9 @@ const usersController = {
     if (!existing) {
       throw new AppError('User tidak ditemukan', 404);
     }
+
+    assertSelfProfile(existing, req.user);
+
     const id = existing.id;
 
     // Hanya field yang benar-benar dikirim (mirip $request->has() di Laravel)
@@ -294,8 +316,8 @@ const usersController = {
         return includePrevious
           ? birthMonth === month || birthMonth === previousMonth
           : birthMonth === month;
-      })
-      .map(serializeUser);
+      }      )
+      .map(serializeBirthdayUser);
 
     if (birthdays.length === 0) {
       return apiResponse.notFound(res);

@@ -32,4 +32,21 @@ function serializeUser(user) {
   return data;
 }
 
-export { serializeUser };
+/**
+ * Serialisasi minimal untuk data yang diakses tanpa autentikasi
+ * (endpoint publik /birthday): hanya nama, tanggal lahir, dan foto.
+ * Tanpa email, No. HP, alamat, gol_darah, public_id, media sosial —
+ * mencegah scraping PII jemaat oleh pihak tanpa akun.
+ * @param {object} user - objek hasil query Prisma
+ */
+function serializeBirthdayUser(user) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    name: user.name,
+    tgl_lahir: user.tgl_lahir,
+    photo_url: fileUploadService.getPublicUrl(user.filename),
+  };
+}
+
+export { serializeUser, serializeBirthdayUser };

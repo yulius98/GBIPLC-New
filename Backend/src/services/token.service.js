@@ -16,6 +16,17 @@ const revokedCache = new NodeCache({
   checkperiod: 600,
 });
 /**
+ * Pencabutan semua sesi milik satu user (mis. setelah reset password).
+ * Menyimpan UNIX ms saat seluruh sesi user dicabut; token usia lebih tua
+ * dari penanda ini ditolak di authenticate/refresh.
+ * TTL = masa hidup access token (+ buffer): setelah itu semua token yang
+ * terbit sebelum pencabutan sudah pasti kedaluwarsa, jadi entri aman dihapus.
+ */
+const userRevokedCache = new NodeCache({
+  stdTTL: env.jwt.ttlMinutes * 60 + 60,
+  checkperiod: 300,
+});
+/**
  * Service JWT terpusat.
  * Payload mengikuti klaim JWT Laravel (sub = id user, plus role/name/email).
  */
@@ -110,6 +121,33 @@ const tokenService = {
   isRevoked(jti) {
     if (!jti) return false;
     return revokedCache.has(`rvi:${jti}`);
+  },
+
+  /**
+   * Cabut SEMUA token aktif satu user (setelah reset/ganti password).
+   * Berlaku untuk semua token yang terbit sebelum momen ini, termasuk
+   * token yang dikeluarkan sebelum fitur ini ada (dicek via iat payload).
+   * @param {number|string} userId
+   * @returns {boolean}
+   */
+  revokeAllForUser(userId) {
+    if (!userId) return false;
+    userRevokedCache.set(`rsu:${userId}`, Date.now());
+    return true;
+  },
+
+  /**
+   * Apakah sesi user sudah dicabut SETELAH token ini terbit?
+   * @param {number|string} userId
+   * @param {number|undefined} iatSeconds - klaim iat payload JWT
+   * @returns {boolean}
+   */
+  areUserSessionsRevoked(userId, iatSeconds) {
+    if (!userId) return false;
+    const revokedAt = userRevokedCache.get(`rsu:${userId}`);
+    if (revokedAt == null) return false;
+    if (!iatSeconds) return true; // payload tanpa iat: perlakukan sebagai token lama
+    return iatSeconds * 1000 < revokedAt;
   },
 
   /**

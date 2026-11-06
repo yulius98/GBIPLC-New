@@ -40,7 +40,9 @@ export async function toImage(file, maxKB = 250) {
     const types = ['image/webp', 'image/jpeg'].filter(supportsType)
     const primaryType = types[0] || 'image/jpeg'
 
-    for (let attempt = 0; attempt < 20 && !(blob && blob.size <= maxBytes); attempt++) {
+    // Kompresi: turunkan kualitas terlebih dahulu, lalu skala dimensi,
+    // diulang sampai ukuran blob <= maxBytes (garansi ukuran maksimum).
+    for (let attempt = 0; attempt < 60 && !(blob && blob.size <= maxBytes); attempt++) {
       const canvas = document.createElement('canvas')
       canvas.width = width
       canvas.height = height
@@ -48,13 +50,15 @@ export async function toImage(file, maxKB = 250) {
       blob = await canvasToBlob(canvas, primaryType, quality)
 
       if (blob && blob.size <= maxBytes) break
-      if (quality > 0.5) {
-        quality -= 0.1
+      if (quality > 0.4) {
+        quality = Math.max(0.4, quality - 0.05)
       } else {
-        width = Math.max(1, Math.round(width * 0.8))
-        height = Math.max(1, Math.round(height * 0.8))
-        quality = 0.6
+        width = Math.max(1, Math.round(width * 0.85))
+        height = Math.max(1, Math.round(height * 0.85))
+        quality = 0.7
       }
+      // Pengaman: berhenti bila dimensi sudah minimum
+      if (width === 1 || height === 1) break
     }
 
     return blob

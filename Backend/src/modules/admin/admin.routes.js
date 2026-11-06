@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../../utils/prisma.js';
 import createCrudController from '../../utils/crudFactory.js';
+import AppError from '../../utils/AppError.js';
 import authenticate from '../../middlewares/authenticate.js';
 import authorize from '../../middlewares/authorize.js';
 import { uploadFields, uploadDocument } from '../../middlewares/upload.js';
@@ -85,6 +86,13 @@ const tentangPelayananController = createCrudController({
   orderBy: { id: 'asc' },
   allowedFields: ['icon', 'judul', 'frekuensi', 'deskripsi'],
   resourceName: 'Kartu Pelayanan',
+  // Validasi panjang deskripsi (maks. 150 karakter, sinkron dengan UI admin)
+  transform: (d) => {
+    if (typeof d.deskripsi === 'string' && d.deskripsi.trim().length > 150) {
+      throw new AppError('Deskripsi maksimal 150 karakter', 422);
+    }
+    return d;
+  },
 });
 
 // ---------- Kegiatan (event) ----------

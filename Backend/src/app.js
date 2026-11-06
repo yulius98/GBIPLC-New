@@ -8,8 +8,11 @@ import notFound from './middlewares/notFound.js';
 import errorHandler from './middlewares/errorHandler.js';
 const app = express();
 
-// Aplikasi ini selalu berada di belakang proxy (nginx / cloudflared tunnel),
-// jadi req.ip diambil dari header X-Forwarded-For hops pertama.
+// Aplikasi ini selalu berada di belakang proxy (cloudflared tunnel → nginx),
+// jadi req.ip diambil dari X-Forwarded-For hop pertama. Akses langsung dari
+// internet ke nginx/backend sudah ditutup (port host terikat 127.0.0.1 di
+// docker-compose), sehingga header dari klien tidak bisa dipalsukan —
+// rate limit memakai CF-Connecting-IP, lihat middlewares/rateLimit.js.
 app.set('trust proxy', 1);
 
 // ---------- Security headers ----------
@@ -17,6 +20,13 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+  // Respons API tidak berisi dokumen HTML aktif: larang semua konten & embed.
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+  if (env.isProduction) {
+    // TLS dihentikan di Cloudflare; header ini diwariskan ke browser lewat tunnel.
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
   next();
 });
 

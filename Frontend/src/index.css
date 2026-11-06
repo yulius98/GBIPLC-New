@@ -1973,6 +1973,48 @@ a {
   margin-top: 3rem;
 }
 
+/* Tab kecil untuk halaman admin dengan banyak section (mis. Youth) */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+}
+
+.admin-tabs__tab {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.admin-tabs__tab:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+.admin-tabs__tab--active,
+.admin-tabs__tab--active:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.admin-tabs__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .admin-search {
   padding: 0.6rem 0.9rem;
   border: 1.5px solid var(--border);

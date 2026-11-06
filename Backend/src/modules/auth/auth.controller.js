@@ -55,9 +55,21 @@ const authController = {
       throw new AppError('Token tidak valid', 401);
     }
 
+    // Token yang sudah di-logout (blacklist jti) tidak boleh diputar lagi —
+    // tanpa cek ini, logout dari klien web bisa dihindari lewat /refresh.
+    if (tokenService.isRevoked(payload.jti)) {
+      throw new AppError('Sesi sudah diakhiri. Silakan login kembali.', 401);
+    }
+
     const user = await prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user) {
       throw new AppError('User tidak ditemukan', 401);
+    }
+
+    // Sesi yang dicabut secara massal (mis. setelah reset password) juga
+    // tidak boleh diputar.
+    if (tokenService.areUserSessionsRevoked(user.id, payload.iat)) {
+      throw new AppError('Sesi sudah diakhiri. Silakan login kembali.', 401);
     }
 
     const newToken = tokenService.sign(user);

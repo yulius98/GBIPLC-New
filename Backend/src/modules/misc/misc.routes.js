@@ -10,7 +10,9 @@ import { ROLES } from '../../constants/roles.js';
 
 /**
  * Module pendukung: kunjungan, toko jemaat, popup ads, notifikasi, materi komsel.
- * Semua akses tulis dibatasi untuk role pengurus.
+ * Semua akses kunjungan (baca & tulis) dibatasi untuk role pengurus — data
+ * kunjungan pastoral bersifat internal (id_jemaat, catatan besuk).
+ * Endpoint pendukung lainnya (toko-jemaat dst.) dibaca publik, tulis pengurus.
  */
 
 const kunjunganController = createCrudController({
@@ -62,8 +64,8 @@ const materiKomselController = createCrudController({
 
 const router = Router();
 
-router.get('/kunjungan', kunjunganController.list);
-router.get('/kunjungan/:id', kunjunganController.get);
+router.get('/kunjungan', authenticate, authorize(...ROLES.pengurus), kunjunganController.list);
+router.get('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), kunjunganController.get);
 router.post('/kunjungan', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.create);
 router.put('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.update);
 router.delete('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), kunjunganController.remove);
