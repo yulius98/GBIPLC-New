@@ -3,11 +3,17 @@ import 'dotenv/config';
  * Konfigurasi environment terpusat.
  * Semua akses ke process.env dilakukan di sini agar mudah dibaca & di-test.
  */
+
+// Buang "/" di akhir supaya link tidak jadi "//reset-password/..."
+const stripTrailingSlash = (url) => url.replace(/\/+$/, '');
+
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number.parseInt(process.env.PORT || '8000', 10),
   appUrl: process.env.APP_URL || 'http://localhost:8000',
-  frontendUrl: process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:8000',
+  frontendUrl: stripTrailingSlash(
+    process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:8000',
+  ),
 
   databaseUrl: process.env.DATABASE_URL,
 
@@ -39,6 +45,11 @@ const env = {
 // Di produksi, token yang ditandatangani secret publik ini dapat ditempa...
 if (env.isProduction && !process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET wajib diisi di environment produksi (Backend/.env).');
+}
+
+// Di produksi, link reset password tidak boleh jatuh ke localhost.
+if (env.isProduction && !process.env.FRONTEND_URL) {
+  throw new Error('FRONTEND_URL wajib diisi di environment produksi (Backend/.env).');
 }
 
 export default env;
