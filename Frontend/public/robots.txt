@@ -9,4 +9,4 @@ Disallow: /gemar-alkitab
 Disallow: /happy-bday
 Disallow: /data-saya
 
-Sitemap: https://philadelphialifecenter.devprox.my.id/sitemap.xml
+Sitemap: https://philadelphialifecenter.com/sitemap.xml
