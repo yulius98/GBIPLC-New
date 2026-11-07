@@ -180,3 +180,26 @@ export const IconArrowRight = (props) => (
     <path d="m13 6 6 6-6 6" />
   </SvgIcon>
 )
+
+/* Rumah — navigasi utama (tab bar mobile) */
+export const IconHome = (props) => (
+  <SvgIcon {...props}>
+    <path d="M4 10.75 12 4l8 6.75" />
+    <path d="M5.5 9.5V20h13V9.5" />
+    <path d="M9.5 20v-5.5h5V20" />
+  </SvgIcon>
+)
+
+/* Daftar menu (drawer/sheet mobile) */
+export const IconMenu = (props) => (
+  <SvgIcon {...props}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </SvgIcon>
+)
+
+/* Silang untuk tombol tutup drawer/sheet */
+export const IconClose = (props) => (
+  <SvgIcon {...props}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </SvgIcon>
+)

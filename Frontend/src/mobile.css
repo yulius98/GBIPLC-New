@@ -1,0 +1,634 @@
+/* ============================================================
+   GBI PLC — Mobile App Shell
+   Lapisan UX khusus layar kecil: saat dibuka dari handphone,
+   seluruh aplikasi berperilaku seperti aplikasi mobile native:
+   - SEMUA menu dipindahkan ke bawah (bottom tab bar + sheet)
+   - Navbar atas hanya menyisakan logo (brand) saja
+   - Sidebar admin tidak tampil; menu admin juga di bawah
+   - Modal menjadi bottom sheet yang naik dari bawah
+   - Target sentuh minimal 44px, aman untuk area notch iPhone
+
+   Aturan di file ini hanya aktif di dalam media query, jadi
+   tampilan desktop pada index.css tidak berubah sama sekali.
+   ============================================================== */
+
+/* ---------- Dasar sentuh & safe area ---------- */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+@keyframes mobile-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobile-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   1. BOTTOM TAB BAR — SEMUA navigasi utama ada di bawah
+   ============================================================ */
+.tabbar {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 120; /* di atas navbar (100), di bawah sheet (320) */
+    display: block;
+  }
+
+  .tabbar__inner {
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 28px rgba(15, 36, 57, 0.1);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .tabbar__item {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 58px;
+    padding: 0.45rem 0;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color var(--transition);
+  }
+
+  .tabbar__item:active {
+    color: var(--primary);
+  }
+
+  .tabbar__ico {
+    width: 34px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    transition:
+      background var(--transition),
+      transform var(--transition);
+  }
+
+  .tabbar__item.is-active {
+    color: var(--primary);
+  }
+
+  .tabbar__item.is-active .tabbar__ico {
+    background: var(--accent-soft);
+    transform: translateY(-1px);
+  }
+
+  /* Ruang konten agar tidak tertutup tab bar */
+  .footer__inner {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================================
+   2. SHEET MENU — daftar lengkap dibuka dari bawah layar
+   ============================================================ */
+.sheet {
+  display: none; /* hanya dirender di layar kecil — lihat media query bawah */
+}
+
+@media (max-width: 860px) {
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 320;
+    display: flex;
+    align-items: flex-end;
+  }
+}
+
+.sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  background: rgba(10, 25, 41, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: mobile-fade 0.22s ease;
+}
+
+.sheet__panel {
+  position: relative;
+  width: 100%;
+  max-height: 80dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -24px 60px rgba(15, 36, 57, 0.28);
+  padding: 0.6rem 1rem calc(1.1rem + env(safe-area-inset-bottom));
+  animation: mobile-sheet-up 0.3s cubic-bezier(0.32, 0.72, 0.32, 1);
+}
+
+.sheet__handle {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 0 auto 0.9rem;
+}
+
+.sheet__title {
+  margin: 0 0 0.35rem;
+  padding: 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+}
+
+.sheet__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet__row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 50px;
+  padding: 0.55rem 0.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  font-weight: 600;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.sheet__row:hover,
+.sheet__row:active {
+  background: var(--accent-soft);
+}
+
+.sheet__row--danger {
+  color: var(--error);
+}
+
+.sheet__row--danger:hover,
+.sheet__row--danger:active {
+  background: var(--error-bg);
+}
+
+.sheet__row svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.sheet__row--danger svg {
+  color: var(--error);
+}
+
+.sheet__sep {
+  margin: 0.6rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.sheet__account {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.sheet__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sheet__account-name {
+  display: block;
+  font-weight: 700;
+  color: var(--primary-dark);
+  overflow-wrap: break-word;
+}
+
+.sheet__account-role {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+/* ============================================================
+   3. NAVBAR ATAS — di layar kecil hanya menyisakan logo.
+      Semua menu (link, akun, keluar) pindah ke bottom bar.
+   ============================================================ */
+@media (max-width: 860px) {
+  .navbar {
+    padding: 0.7rem max(1rem, env(safe-area-inset-left));
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+  }
+
+  .navbar__toggle,
+  .navbar__links,
+  .navbar__user {
+    display: none !important;
+  }
+
+  /* Halaman user (Agenda & Profil) tidak punya footer,
+     beri ruang agar konten tidak tertutup tab bar */
+  .layout:not(.layout--public) .container {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================================
+   4. PANEL ADMIN — tanpa sidebar di layar kecil.
+      Menu panel admin juga pindah ke bottom bar (MobileTabBar).
+   ============================================================ */
+@media (max-width: 860px) {
+  .admin {
+    display: block;
+    min-height: 100dvh;
+  }
+
+  .admin__topbar {
+    position: sticky;
+    top: 0;
+    padding: 0.7rem max(1rem, env(safe-area-inset-left));
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+  }
+
+  .admin__page-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin__user {
+    flex-shrink: 0;
+  }
+
+  .admin__user strong {
+    display: none;
+  }
+
+  /* Sidebar desktop disembunyikan di luar layar (tidak digunakan) */
+  .admin__sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: 280px;
+    max-width: 86vw;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    z-index: 400;
+    padding: calc(1rem + env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
+    transform: translateX(-104%);
+    visibility: hidden;
+    pointer-events: none;
+    border-radius: 0 20px 20px 0;
+    box-shadow: 24px 0 60px rgba(15, 36, 57, 0.25);
+  }
+
+  .admin__brand {
+    flex: 0 0 auto;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 1.25rem;
+    padding: 0.25rem 0.5rem 1.25rem;
+  }
+
+  .admin__menu {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    order: 0;
+    overflow-y: auto;
+  }
+
+  .admin__sidebar-footer {
+    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 0.75rem;
+  }
+
+  /* Isi konten penuh, rapi, tidak tertutup tab bar */
+  .admin__main {
+    display: block;
+  }
+
+  .admin__content {
+    padding: 1.1rem max(1rem, env(safe-area-inset-left)) calc(6rem + env(safe-area-inset-bottom));
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Kepala halaman admin: judul di atas, alat di bawah */
+  .admin-page__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .admin-page__tools {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .admin-page__tools .admin-search {
+    flex: 1 1 100%;
+    min-width: 0;
+    min-height: 46px;
+  }
+
+  .admin-page__tools .btn {
+    flex: 1;
+    min-height: 46px;
+  }
+
+  /* Tab admin & tab setting: geser horizontal, tidak membungkus */
+  .admin-tabs,
+  .settings-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-tabs::-webkit-scrollbar,
+  .settings-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-tabs__tab,
+  .settings-tabs__btn {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  /* Form grid satu kolom dan tombol besar di bawah */
+  .admin-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form__actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    margin-top: 0.75rem;
+    padding: 0.85rem 0 0;
+    gap: 0.6rem;
+  }
+
+  .admin-form__actions .btn {
+    flex: 1;
+    min-height: 48px;
+  }
+
+  /* Tabel: scroll horizontal tetap, tapi lebih rapat & mudah dibaca */
+  .admin-table th,
+  .admin-table td {
+    padding: 0.7rem 0.75rem;
+  }
+
+  .admin-table td {
+    max-width: 220px;
+    overflow-wrap: break-word;
+  }
+
+  /* Statistik dashboard 2 kolom agar tidak terlalu kecil */
+  .dash-grid--four {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .dash-stat {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 1rem;
+  }
+
+  .dash-stat__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dash-stat__value {
+    font-size: 1.45rem;
+  }
+
+  .dash-menu {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   5. MODAL → BOTTOM SHEET naik dari bawah layar
+   ============================================================ */
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+    animation: mobile-fade 0.2s ease;
+  }
+
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: 93dvh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: mobile-sheet-up 0.3s cubic-bezier(0.32, 0.72, 0.32, 1);
+  }
+
+  .modal__head {
+    position: relative;
+    padding: 0.9rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .modal__head h3 {
+    font-size: 1.05rem;
+    padding-right: 2.5rem;
+  }
+
+  .modal__close {
+    position: absolute;
+    right: 0.75rem;
+    top: 0.65rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1.5rem;
+  }
+
+  .modal__body--auth,
+  .modal--form .modal__body {
+    max-height: 76dvh;
+  }
+
+  /* Tombol aksi modal selalu terlihat di dasar sheet */
+  .admin-form__actions .btn {
+    min-height: 48px;
+  }
+
+  .map-modal__body {
+    height: 50dvh;
+  }
+
+  /* Form besar: tombol penuh satu baris */
+  .register__actions .btn {
+    flex: 1 1 100%;
+    min-height: 50px;
+  }
+
+  .register__success-actions .btn {
+    flex: 1 1 100%;
+    min-height: 50px;
+  }
+
+  /* Anti auto-zoom iOS pada input (butuh font-size ≥ 16px) */
+  .field input,
+  .field select,
+  .field textarea,
+  .admin-search,
+  .pagination__size select {
+    font-size: 16px;
+  }
+
+  .pagination__size select {
+    min-height: 44px;
+  }
+
+  .pagination__controls .btn {
+    padding: 0.55rem 0.95rem;
+  }
+
+  /* Kartu register & profil lebih hemat ruang */
+  .register__form {
+    padding: 1.25rem;
+  }
+}
+
+/* ============================================================
+   6. SENTUHAN HALAMAN PUBLIK — rapi & nyaman di jempol
+   ============================================================ */
+@media (max-width: 640px) {
+  .auth-page {
+    min-height: 100dvh;
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: calc(3rem + env(safe-area-inset-top));
+  }
+
+  .auth-card {
+    padding: 1.6rem 1.25rem;
+    max-width: 420px;
+  }
+
+  .auth-actions {
+    flex-direction: column;
+  }
+
+  .auth-actions .btn {
+    min-height: 50px;
+    width: 100%;
+  }
+
+  .auth-forgot__link {
+    padding: 0.35rem 0;
+  }
+
+  /* Hero slider menempel dengan aman */
+  .slide__caption {
+    padding: 2rem 1.1rem 2.4rem;
+  }
+
+  /* FAB WhatsApp & Map naik di atas tab bar */
+  .wa-fab {
+    right: 0.9rem;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+
+  .map-fab {
+    right: 0.9rem;
+    bottom: calc(74px + 62px + env(safe-area-inset-bottom));
+  }
+
+  /* Pemilih tanggal: panel aman di dalam layar */
+  .datepicker__panel {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .dash-chart {
+    height: 148px;
+  }
+}
+
+/* Menghilangkan efek hover yang mengganggu di perangkat sentuh */
+@media (hover: none) {
+  .btn:hover {
+    transform: none;
+  }
+
+  .admin-quick__item:hover,
+  .dash-stat:hover,
+  .dash-tile:hover,
+  .dash-menu__item:hover,
+  .wa-fab:hover,
+  .map-fab:hover {
+    transform: none;
+  }
+}

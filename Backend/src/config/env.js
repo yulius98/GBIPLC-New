@@ -5,7 +5,13 @@ import 'dotenv/config';
  */
 
 // Buang "/" di akhir supaya link tidak jadi "//reset-password/..."
-const stripTrailingSlash = (url) => url.replace(/\/+$/, '');
+// Tanpa regex: satu kali telusur dari belakang, bebas backtracking.
+const stripTrailingSlash = (url) => {
+  if (typeof url !== 'string') return url;
+  let end = url.length;
+  while (end > 0 && url.codePointAt(end - 1) === 47 /* '/' */) end -= 1;
+  return url.slice(0, end);
+};
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',

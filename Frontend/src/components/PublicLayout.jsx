@@ -7,9 +7,24 @@ import useServiceSchedules from '../hooks/useServiceSchedules'
 import useDataGembala from '../hooks/useDataGembala'
 import WhatsAppFab from './WhatsAppFab'
 import MapFab from './MapFab'
+import MobileTabBar from './MobileTabBar'
+import {
+  IconHome,
+  IconChurch,
+  IconGroup,
+  IconLifeGroup,
+  IconGlobe,
+  IconUsers,
+  IconBook,
+  IconCake,
+  IconDashboard,
+  IconUserPlus,
+  IconArrowRight,
+  IconLogout,
+} from './Icons'
 
 /**
- * Link akun sesuai role di navbar/footer publik:
+ * Link akun sesuai role di navbar/footer publik (desktop):
  * jemaat → kelola data diri, pengurus → panel admin, tamu → registrasi.
  */
 function AccountNav({ role, onClick = () => {} }) {
@@ -34,11 +49,27 @@ function AccountNav({ role, onClick = () => {} }) {
   )
 }
 
+/* Tab bar bawah — 4 tujuan utama + tombol Menu (sheet berisi sisanya) */
+const TAB_BAR = [
+  { to: '/', label: 'Beranda', icon: IconHome, end: true },
+  { to: '/ibadah-raya', label: 'Ibadah', icon: IconChurch },
+  { to: '/youth', label: 'Youth', icon: IconGroup },
+  { to: '/life-group', label: 'Life Group', icon: IconLifeGroup },
+]
+
+/* Halaman & aksi yang muncul di sheet menu mobile */
+const SHEET_PAGES = [
+  { to: '/ibadah-raya', label: 'Ibadah Raya', icon: IconChurch },
+  { to: '/youth', label: 'Youth', icon: IconGroup },
+  { to: '/life-group', label: 'Life Group', icon: IconLifeGroup },
+  { to: '/tentang', label: 'Tentang Kami', icon: IconGlobe },
+  { to: '/kontak', label: 'Kontak', icon: IconUsers },
+]
+
 export default function PublicLayout() {
   const { user, logout } = useAuth()
   const seo = useSeo()
   const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { schedules: scheduleItems } = useServiceSchedules()
   const { gembala } = useDataGembala()
@@ -79,6 +110,36 @@ export default function PublicLayout() {
     navigate('/', { replace: true })
   }
 
+  /* Isi sheet menu mobile — dibangun sesuai status & role pengguna */
+  function buildSheetRows() {
+    const rows = []
+    if (user) {
+      if (user.role === 'jemaat') {
+        rows.push({ to: '/data-saya', label: 'Data Saya', icon: <IconDashboard size={20} /> })
+      } else {
+        rows.push({ to: '/dashboard', label: 'Dashboard', icon: <IconDashboard size={20} /> })
+      }
+      rows.push(
+        { to: '/gemar-alkitab', label: 'Gemar Alkitab', icon: <IconBook size={20} /> },
+        { to: '/happy-bday', label: "Happy B'day", icon: <IconCake size={20} /> },
+        { type: 'sep' },
+      )
+    }
+    for (const page of SHEET_PAGES) {
+      rows.push({ to: page.to, label: page.label, icon: <page.icon size={20} /> })
+    }
+    rows.push({ type: 'sep' })
+    if (user) {
+      rows.push({ label: 'Keluar', icon: <IconLogout size={20} />, danger: true, onClick: handleLogout })
+    } else {
+      rows.push(
+        { to: '/login', label: 'Login', icon: <IconArrowRight size={20} /> },
+        { to: '/register', label: 'Registrasi', icon: <IconUserPlus size={20} /> },
+      )
+    }
+    return rows
+  }
+
   const navClass = `navbar navbar--public ${scrolled ? 'navbar--scrolled' : ''}`
 
   // Logo situs: gambar OG di-upload di Admin → Setting; fallback "GBI" bila kosong
@@ -87,11 +148,7 @@ export default function PublicLayout() {
   return (
     <div className="layout layout--public">
       <header className={navClass}>
-        <NavLink
-          to="/"
-          className="navbar__brand"
-          onClick={() => setMenuOpen(false)}
-        >
+        <NavLink to="/" className="navbar__brand">
           <span className="navbar__brand-mark">
             {logoUrl ? (
               <img className="navbar__brand-logo" src={logoUrl} alt={`Logo ${seo.church.name}`} />
@@ -100,35 +157,21 @@ export default function PublicLayout() {
             )}
           </span>{' '}GBI PLC
         </NavLink>
-        <nav
-          className={`navbar__links ${menuOpen ? "navbar__links--open" : ""}`}
-        >
-          <NavLink to="/ibadah-raya" onClick={() => setMenuOpen(false)}>
-            Ibadah Raya
-          </NavLink>
-          <NavLink to="/youth" onClick={() => setMenuOpen(false)}>
-            Youth
-          </NavLink>
-          <NavLink to="/life-group" onClick={() => setMenuOpen(false)}>
-            Life Group
-          </NavLink>
-          <NavLink to="/tentang" onClick={() => setMenuOpen(false)}>
-            Tentang
-          </NavLink>
-          <NavLink to="/kontak" onClick={() => setMenuOpen(false)}>
-            Kontak
-          </NavLink>
+        {/* Di layar kecil, navbar ini disembunyikan CSS — semua menu
+            berpindah ke tab bar bawah (MobileTabBar). */}
+        <nav className="navbar__links">
+          <NavLink to="/ibadah-raya">Ibadah Raya</NavLink>
+          <NavLink to="/youth">Youth</NavLink>
+          <NavLink to="/life-group">Life Group</NavLink>
+          <NavLink to="/tentang">Tentang</NavLink>
+          <NavLink to="/kontak">Kontak</NavLink>
           {user && (
             <>
-              <NavLink to="/gemar-alkitab" onClick={() => setMenuOpen(false)}>
-                Gemar Alkitab
-              </NavLink>
-              <NavLink to="/happy-bday" onClick={() => setMenuOpen(false)}>
-                Happy B'day
-              </NavLink>
+              <NavLink to="/gemar-alkitab">Gemar Alkitab</NavLink>
+              <NavLink to="/happy-bday">Happy B'day</NavLink>
             </>
           )}
-          <AccountNav role={user?.role} onClick={() => setMenuOpen(false)} />
+          <AccountNav role={user?.role} />
         </nav>
         <div className="navbar__user">
           {user ? (
@@ -153,37 +196,6 @@ export default function PublicLayout() {
             </NavLink>
           )}
         </div>
-        <button
-          type="button"
-          className="navbar__toggle"
-          aria-label="Buka menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            {menuOpen ? (
-              <path
-                d="M6 6l12 12M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M4 7h16M4 12h16M4 17h16"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
-        </button>
       </header>
 
       <main className="layout-main">
@@ -263,6 +275,13 @@ export default function PublicLayout() {
           </div>
         </div>
       </footer>
+
+      {/* SEMUA menu mobile hidup di sini (bottom tab bar + sheet) */}
+      <MobileTabBar
+        tabs={TAB_BAR}
+        account={user ? { name: user.name, role: user.role } : null}
+        rows={buildSheetRows()}
+      />
 
       <WhatsAppFab />
       <MapFab />

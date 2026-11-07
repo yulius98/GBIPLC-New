@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import MobileTabBar from './MobileTabBar'
 import {
   IconDashboard,
   IconCalendar,
@@ -14,16 +15,23 @@ import {
   IconLogout,
 } from './Icons'
 
-const MENU = [
-  { to: '/dashboard', label: 'Dashboard', icon: <IconDashboard size={18} /> },
-  { to: '/dashboard/kegiatan', label: 'Kegiatan', icon: <IconCalendar size={18} /> },
-  { to: '/dashboard/saat-teduh', label: 'Saat Teduh', icon: <IconBook size={18} /> },
-  { to: '/dashboard/ibadah-raya', label: 'Ibadah Raya', icon: <IconChurch size={18} /> },
-  { to: '/dashboard/kunjungan', label: 'Kunjungan', icon: <IconHeart size={18} /> },
-  { to: '/dashboard/youth', label: 'Youth', icon: <IconGroup size={18} /> },
-  { to: '/dashboard/life-group', label: 'Life Group', icon: <IconLifeGroup size={18} /> },
-  { to: '/dashboard/users', label: 'Kelola User', icon: <IconUsers size={18} /> },
-  { to: '/dashboard/setting', label: 'Setting', icon: <IconSettings size={18} /> },
+/* Tab tetap di bar: 3 tujuan paling sering + tombol Menu (sheet sisanya) */
+const TAB_BAR = [
+  { to: '/dashboard', label: 'Dashboard', icon: IconDashboard, end: true },
+  { to: '/dashboard/users', label: 'User', icon: IconUsers },
+  { to: '/dashboard/setting', label: 'Setting', icon: IconSettings },
+]
+
+/* Menu lengkap panel admin (untuk sheet mobile) */
+const ADMIN_PAGES = [
+  { to: '/dashboard/kegiatan', label: 'Kegiatan', icon: IconCalendar },
+  { to: '/dashboard/saat-teduh', label: 'Saat Teduh', icon: IconBook },
+  { to: '/dashboard/ibadah-raya', label: 'Ibadah Raya', icon: IconChurch },
+  { to: '/dashboard/kunjungan', label: 'Kunjungan', icon: IconHeart },
+  { to: '/dashboard/youth', label: 'Youth', icon: IconGroup },
+  { to: '/dashboard/life-group', label: 'Life Group', icon: IconLifeGroup },
+  { to: '/dashboard/users', label: 'Kelola User', icon: IconUsers },
+  { to: '/dashboard/setting', label: 'Setting', icon: IconSettings },
 ]
 
 export default function AdminLayout() {
@@ -35,8 +43,24 @@ export default function AdminLayout() {
     navigate('/', { replace: true })
   }
 
+  function buildSheetRows() {
+    const rows = ADMIN_PAGES.map((page) => ({
+      to: page.to,
+      label: page.label,
+      icon: <page.icon size={20} />,
+    }))
+    rows.push(
+      { type: 'sep' },
+      { to: '/', label: 'Lihat Situs', icon: <IconGlobeExternal size={20} /> },
+      { type: 'sep' },
+      { label: 'Keluar', icon: <IconLogout size={20} />, danger: true, onClick: handleLogout },
+    )
+    return rows
+  }
+
   return (
     <div className="admin">
+      {/* Sidebar desktop — CSS menyembunyikannya di layar kecil */}
       <aside className="admin__sidebar">
         <NavLink to="/dashboard" className="admin__brand">
           <span className="admin__brand-mark">GBI</span>
@@ -47,13 +71,13 @@ export default function AdminLayout() {
         </NavLink>
 
         <nav className="admin__menu">
-          {MENU.map((item) => (
+          {ADMIN_PAGES.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) => `admin__menu-item${isActive ? ' is-active' : ''}`}
             >
-              <span className="admin__menu-icon">{item.icon}</span>
+              <span className="admin__menu-icon"><item.icon size={18} /></span>
               {item.label}
             </NavLink>
           ))}
@@ -87,6 +111,13 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* SEMUA menu admin di layar kecil hidup di sini (bottom bar + sheet) */}
+      <MobileTabBar
+        tabs={TAB_BAR}
+        account={user ? { name: user.name, role: user.role } : null}
+        rows={buildSheetRows()}
+      />
     </div>
   )
 }
