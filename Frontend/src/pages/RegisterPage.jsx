@@ -9,6 +9,39 @@ const GOL_DARAH = ['A', 'B', 'AB', 'O']
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+/**
+ * Terjemahkan error getUserMedia menjadi pesan aksi yang jelas.
+ * Dipakai oleh openCamera() supaya pengguna tahu harus berbuat apa,
+ * bukan sekadar "kamera tidak dapat diakses".
+ */
+function getCameraErrorMessage(err) {
+  const name = err?.name || ''
+  if (
+    name === 'NotAllowedError' ||
+    name === 'PermissionDeniedError' ||
+    name === 'SecurityError'
+  ) {
+    return (
+      'Akses kamera ditolak. Izinkan kamera untuk situs ini lewat ikon gembok di address bar ' +
+      'browser (menu Situs → Kamera → Izinkan), muat ulang halaman, lalu coba lagi. ' +
+      'Atau langsung gunakan tombol “Pilih File” untuk unggah foto.'
+    )
+  }
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    return 'Kamera tidak ditemukan di perangkat ini. Silakan gunakan tombol “Pilih File” untuk unggah foto.'
+  }
+  if (name === 'NotReadableError' || name === 'TrackStartError') {
+    return (
+      'Kamera sedang dipakai aplikasi lain. Tutup aplikasi kamera/panggilan video, ' +
+      'lalu coba lagi. Atau gunakan tombol “Pilih File” untuk unggah foto.'
+    )
+  }
+  if (name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError') {
+    return 'Kamera depan tidak tersedia di perangkat ini. Silakan gunakan tombol “Pilih File” untuk unggah foto.'
+  }
+  return 'Kamera tidak dapat diakses. Silakan gunakan tombol “Pilih File” untuk unggah foto.'
+}
+
 export default function RegisterPage() {
   const seo = useSeo()
 
@@ -41,15 +74,19 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const isTouchDevice = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1
   const isMobile =
     typeof navigator !== 'undefined' &&
-    /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|BlackBerry|Windows Phone|Mobile/i.test(
+    (/Android|iPhone|iPad|iPod|IEMobile|Opera Mini|BlackBerry|Windows Phone|Mobile/i.test(
       navigator.userAgent,
-    )
+    ) ||
+      // iPadOS modern menyebut dirinya "Macintosh" di user-agent, tapi
+      // tetap perangkat sentuh: deteksi supaya capture="user" tetap aktif.
+      (isTouchDevice && /Macintosh/.test(navigator.userAgent)))
+  const mediaDevicesSupport =
+    typeof navigator !== 'undefined' ? navigator.mediaDevices : undefined
   const canUseCamera =
-    typeof navigator !== 'undefined' &&
-    !!navigator.mediaDevices &&
-    typeof navigator.mediaDevices.getUserMedia === 'function'
+    !!mediaDevicesSupport && typeof mediaDevicesSupport.getUserMedia === 'function'
   const showCameraButton = isMobile && canUseCamera
 
   const videoRef = useRef(null)
@@ -57,6 +94,7 @@ export default function RegisterPage() {
   const previewUrlRef = useRef(null)
   const [cameraOpen, setCameraOpen] = useState(false)
   const [cameraReady, setCameraReady] = useState(false)
+  const [cameraStarting, setCameraStarting] = useState(false)
   const [cameraError, setCameraError] = useState('')
   const [previewUrl, setPreviewUrl] = useState('')
 
@@ -118,18 +156,68 @@ export default function RegisterPage() {
   }
 
   async function openCamera() {
-    setCameraError('')
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      })
-      streamRef.current = stream
-      setCameraReady(false)
-      setCameraOpen(true)
-    } catch {
-      setCameraError('Kamera tidak dapat diakses. Silakan gunakan tombol “Pilih File” untuk unggah foto.')
+    // 1) Guard: mediaDevices tidak ada umumnya karena halaman dibuka lewat
+    //    HTTP (bukan secure context) atau browser tidak mendukung kamera.
+    if (!canUseCamera) {
+      setCameraError(
+        window.isSecureContext === false
+          ? 'Kamera hanya dapat dibuka lewat koneksi aman (HTTPS). Buka alamat situs dengan https://… atau langsung gunakan tombol “Pilih File” untuk unggah foto.'
+          : 'Browser tidak mendukung akses kamera. Silakan gunakan tombol “Pilih File” untuk unggah foto.',
+      )
+      return
     }
+
+    // 2) Cegah dobel-klik: beberapa perangkat konflik saat getUserMedia
+    //    dipanggil dua kali bersamaan.
+    if (cameraStarting || cameraOpen) return
+
+    setCameraError('')
+    setCameraStarting(true)
+
+    // 3) Rantai fallback constraint — dari paling spesifik ke paling longgar.
+    //    Banyak browser mobile menolak kombinasi facingMode + resolusi
+    //    (OverconstrainedError), tapi berhasil dengan constraint sederhana.
+    const constraintAttempts = [
+      // Depan + resolusi ideal
+      { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      // Depan tanpa resolusi
+      { video: { facingMode: 'user' }, audio: false },
+      // Kamera default apa adanya (terakhir)
+      { video: true, audio: false },
+    ]
+
+    let stream = null
+    let lastError = null
+    for (const constraints of constraintAttempts) {
+      try {
+        stream = await mediaDevicesSupport.getUserMedia(constraints)
+        break
+      } catch (err) {
+        lastError = err
+        // Izin ditolak: mencoba ulang dengan constraint lain tidak akan
+        // berhasil (masalahnya bukan constraint), berhenti lebih awal.
+        if (
+          err?.name === 'NotAllowedError' ||
+          err?.name === 'PermissionDeniedError' ||
+          err?.name === 'SecurityError'
+        ) {
+          break
+        }
+      }
+    }
+
+    setCameraStarting(false)
+
+    if (!stream) {
+      // Log detail untuk diagnosa (nama error & pesan asli browser).
+      console.error('getUserMedia gagal:', lastError?.name, lastError?.message)
+      setCameraError(getCameraErrorMessage(lastError))
+      return
+    }
+
+    streamRef.current = stream
+    setCameraReady(false)
+    setCameraOpen(true)
   }
 
   function canvasToJpegFile(canvas) {
@@ -489,9 +577,17 @@ export default function RegisterPage() {
 
               {showCameraButton && (
                 <div className="register__camera-tools">
-                  <button type="button" className="btn btn--ghost" onClick={openCamera}>
-                    Buka Kamera Depan
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={openCamera}
+                    disabled={cameraStarting || cameraOpen}
+                  >
+                    {cameraStarting ? 'Membuka kamera…' : 'Buka Kamera Depan'}
                   </button>
+                  <small className="muted">
+                    Jika kamera gagal dibuka, gunakan tombol “Pilih File” di atas untuk unggah foto.
+                  </small>
                 </div>
               )}
 
