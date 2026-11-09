@@ -64,29 +64,29 @@ const materiKomselController = createCrudController({
 
 const router = Router();
 
-router.get('/kunjungan', authenticate, authorize(...ROLES.pengurus), kunjunganController.list);
-router.get('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), kunjunganController.get);
-router.post('/kunjungan', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.create);
-router.put('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.update);
-router.delete('/kunjungan/:id', authenticate, authorize(...ROLES.pengurus), kunjunganController.remove);
+router.get('/kunjungan', authenticate, authorize(...ROLES.pengurusOrPendeta), kunjunganController.list);
+router.get('/kunjungan/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), kunjunganController.get);
+router.post('/kunjungan', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.create);
+router.put('/kunjungan/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), kunjunganController.update);
+router.delete('/kunjungan/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), kunjunganController.remove);
 
 router.get('/toko-jemaat', tokoJemaatController.list);
 router.get('/toko-jemaat/:id', tokoJemaatController.get);
-router.post('/toko-jemaat', authenticate, authorize(...ROLES.pengurus), tokoJemaatController.create);
-router.put('/toko-jemaat/:id', authenticate, authorize(...ROLES.pengurus), tokoJemaatController.update);
-router.delete('/toko-jemaat/:id', authenticate, authorize(...ROLES.pengurus), tokoJemaatController.remove);
+router.post('/toko-jemaat', authenticate, authorize(...ROLES.pengurusOrPendeta), tokoJemaatController.create);
+router.put('/toko-jemaat/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), tokoJemaatController.update);
+router.delete('/toko-jemaat/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), tokoJemaatController.remove);
 
 router.get('/popup-ads', popupAdController.list);
 router.get('/popup-ads/:id', popupAdController.get);
-router.post('/popup-ads', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), popupAdController.create);
-router.put('/popup-ads/:id', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), popupAdController.update);
-router.delete('/popup-ads/:id', authenticate, authorize(...ROLES.pengurus), popupAdController.remove);
+router.post('/popup-ads', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), popupAdController.create);
+router.put('/popup-ads/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), popupAdController.update);
+router.delete('/popup-ads/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), popupAdController.remove);
 
 router.get('/notofications', notoficationController.list);
 router.get('/notofications/:id', notoficationController.get);
-router.post('/notofications', authenticate, authorize(...ROLES.pengurus), notoficationController.create);
-router.put('/notofications/:id', authenticate, authorize(...ROLES.pengurus), notoficationController.update);
-router.delete('/notofications/:id', authenticate, authorize(...ROLES.pengurus), notoficationController.remove);
+router.post('/notofications', authenticate, authorize(...ROLES.pengurusOrPendeta), notoficationController.create);
+router.put('/notofications/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), notoficationController.update);
+router.delete('/notofications/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), notoficationController.remove);
 
 router.get('/materi-komsel', materiKomselController.list);
 router.get('/materi-komsel/getlink', async (req, res) => {
@@ -120,8 +120,8 @@ router.get('/materi-komsel/getlink', async (req, res) => {
   });
 });
 router.get('/materi-komsel/:id', materiKomselController.get);
-router.post('/materi-komsel', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), materiKomselController.create);
-router.put('/materi-komsel/:id', authenticate, authorize(...ROLES.pengurus), uploadFields([{ name: 'filename', maxCount: 1 }]), materiKomselController.update);
-router.delete('/materi-komsel/:id', authenticate, authorize(...ROLES.pengurus), materiKomselController.remove);
+router.post('/materi-komsel', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), materiKomselController.create);
+router.put('/materi-komsel/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), uploadFields([{ name: 'filename', maxCount: 1 }]), materiKomselController.update);
+router.delete('/materi-komsel/:id', authenticate, authorize(...ROLES.pengurusOrPendeta), materiKomselController.remove);
 
 export default router;

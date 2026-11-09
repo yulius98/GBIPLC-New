@@ -27,7 +27,7 @@ export default function ProfilePage() {
     ['Tanggal lahir', data.tgl_lahir ? new Date(data.tgl_lahir).toLocaleDateString('id-ID') : '-'],
     ['Instagram', data.instagram || '-'],
     ['Facebook', data.facebook || '-'],
-    ['Role', data.role === 'pengurus' ? 'Pengurus' : 'Jemaat'],
+    ['Role', data.role === 'pengurus' ? 'Pengurus' : data.role === 'pendeta' ? 'Pendeta' : 'Jemaat'],
   ]
 
   return (

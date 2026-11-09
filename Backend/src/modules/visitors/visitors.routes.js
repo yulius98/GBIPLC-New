@@ -12,7 +12,7 @@ import { ROLES } from '../../constants/roles.js';
  */
 const router = Router();
 
-const auth = [authenticate, authorize(...ROLES.pengurus)];
+const auth = [authenticate, authorize(...ROLES.pengurusOrPendeta)];
 
 // Anti flood visitor_id acak: tiap batas 30 track per IP per jendela —
 // dapur dedup harian yang sah (satu pengunjung = beberapa track/page load)

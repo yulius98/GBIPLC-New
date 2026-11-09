@@ -12,7 +12,7 @@ import { ROLES } from '../../constants/roles.js';
  * Endpoint admin (pengurus) = CRUD penuh.
  */
 
-const adminAuth = [...[authenticate, authorize(...ROLES.pengurus)]];
+const adminAuth = [...[authenticate, authorize(...ROLES.pengurusOrPendeta)]];
 
 // Koersi nilai dari FormData (semua value string) / JSON ke tipe Prisma.
 const toBool = (v) => v === true || v === 'true' || v === 1 || v === '1';

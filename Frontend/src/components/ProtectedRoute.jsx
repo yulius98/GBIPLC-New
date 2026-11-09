@@ -7,7 +7,9 @@ export default function ProtectedRoute({ children, role }) {
 
   if (loading) return <div className="loading">Memuat…</div>
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />
-  if (role && user.role !== role) return <Navigate to="/" replace />
+  // role bisa berupa string tunggal ("pengurus") atau array (["pengurus", "pendeta"])
+  const allowed = Array.isArray(role) ? role : role ? [role] : null
+  if (allowed && !allowed.includes(user.role)) return <Navigate to="/" replace />
 
   return children
 }

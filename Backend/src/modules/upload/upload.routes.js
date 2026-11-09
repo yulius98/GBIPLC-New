@@ -6,7 +6,7 @@ import { ROLES } from '../../constants/roles.js';
 
 const router = Router();
 
-const adminAuth = [authenticate, authorize(...ROLES.pengurus)];
+const adminAuth = [authenticate, authorize(...ROLES.pengurusOrPendeta)];
 
 // Chunk upload untuk file besar (protokol Resumable.js), khusus pengurus.
 router.get('/chunk-upload', ...adminAuth, uploadController.checkChunk);

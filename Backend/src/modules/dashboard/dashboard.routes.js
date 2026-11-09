@@ -6,7 +6,7 @@ import { ROLES } from '../../constants/roles.js';
 
 const router = Router();
 
-const auth = [authenticate, authorize(...ROLES.pengurus)];
+const auth = [authenticate, authorize(...ROLES.pengurusOrPendeta)];
 
 router.get('/dashboard/:id', ...auth, dashboardController.index);
 router.get('/pengurus/dashboard', ...auth, dashboardController.pengurusDashboard);

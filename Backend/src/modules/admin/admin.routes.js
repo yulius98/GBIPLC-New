@@ -15,7 +15,7 @@ import usersController from '../users/users.controller.js';
  */
 const router = Router();
 
-const auth = [authenticate, authorize(...ROLES.pengurus)];
+const auth = [authenticate, authorize(...ROLES.pengurusOrPendeta)];
 
 const eventController = createCrudController({
   model: prisma.tblEvent,

@@ -146,8 +146,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState(null)
   const [error, setError] = useState('')
 
+  // Pengurus & pendeta sama-sama punya akses panel admin
+  const isAdminRole = user?.role === 'pengurus' || user?.role === 'pendeta'
+
   useEffect(() => {
-    if (user?.role !== 'pengurus') return
+    if (!isAdminRole) return
     let alive = true
     api
       .get(`/dashboard/${user.id}`)
@@ -221,7 +224,7 @@ export default function DashboardPage() {
     ]
   }, [stats])
 
-  if (user?.role !== 'pengurus') {
+  if (!isAdminRole) {
     return <div className="alert alert--error">Halaman ini khusus pengurus.</div>
   }
 

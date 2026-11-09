@@ -19,9 +19,12 @@ export default function Layout() {
     navigate('/', { replace: true })
   }
 
+  // Pengurus & pendeta sama-sama punya akses panel admin
+  const isAdminRole = user?.role === 'pengurus' || user?.role === 'pendeta'
+
   function buildSheetRows() {
     const rows = []
-    if (user?.role === 'pengurus') {
+    if (isAdminRole) {
       rows.push({ to: '/dashboard', label: 'Dashboard', icon: <IconDashboard size={20} /> })
     }
     rows.push(
@@ -51,7 +54,7 @@ export default function Layout() {
               <NavLink to="/happy-bday">Happy B'day</NavLink>
             </>
           )}
-          {user?.role === 'pengurus' && <NavLink to="/dashboard">Dashboard</NavLink>}
+          {isAdminRole && <NavLink to="/dashboard">Dashboard</NavLink>}
         </nav>
         <div className="navbar__user">
           {user && (

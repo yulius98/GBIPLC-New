@@ -27,7 +27,7 @@ export default function LoginPage() {
   const [forgotSubmitting, setForgotSubmitting] = useState(false)
 
   const homeFor = (u) => {
-    if (u?.role === 'pengurus') return '/dashboard'
+    if (u?.role === 'pengurus' || u?.role === 'pendeta') return '/dashboard'
     return location.state?.from?.pathname || '/'
   }
 

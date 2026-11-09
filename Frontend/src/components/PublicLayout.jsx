@@ -35,7 +35,7 @@ function AccountNav({ role, onClick = () => {} }) {
       </NavLink>
     )
   }
-  if (role === 'pengurus') {
+  if (role === 'pengurus' || role === 'pendeta') {
     return (
       <NavLink to="/dashboard" onClick={onClick}>
         Dashboard

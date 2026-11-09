@@ -83,7 +83,7 @@ function App() {
       {/* Panel admin (sidebar), khusus pengurus */}
       <Route
         element={
-          <ProtectedRoute role="pengurus">
+          <ProtectedRoute role={['pengurus', 'pendeta']}>
             <AdminLayout />
           </ProtectedRoute>
         }

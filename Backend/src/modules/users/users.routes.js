@@ -22,19 +22,19 @@ router.get('/birthday', usersController.birthdays);
 router.get(
   '/myprofile/:id',
   authenticate,
-  authorize(...ROLES.jemaatOrPengurus),
+  authorize(...ROLES.all),
   usersController.showProfile
 );
 router.get(
   '/myprofile/:id/edit',
   authenticate,
-  authorize(...ROLES.jemaatOrPengurus),
+  authorize(...ROLES.all),
   usersController.editProfile
 );
 router.put(
   '/myprofile/:id',
   authenticate,
-  authorize(...ROLES.jemaatOrPengurus),
+  authorize(...ROLES.all),
   uploadImage,
   validate(updateProfileSchema),
   usersController.updateProfile
