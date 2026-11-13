@@ -44,43 +44,44 @@ export function useSEO({
       ? title.includes(seo.siteName)
         ? title
         : `${title} | ${seo.siteName}`
-      : seo.siteName
-    const desc = description || seo.defaultDescription
-    const canonicalUrl = new URL(path, seo.siteUrl).href
-    const ogImage = seo.ogImage || `${seo.siteUrl}/favicon.svg`
+      : seo.siteName;
+    const desc = description || seo.defaultDescription;
+    const canonicalUrl = new URL(path, seo.siteUrl).href;
+    const ogImage = seo.ogImage || `${seo.siteUrl}/favicon.svg`;
 
-    document.title = fullTitle
+    document.title = fullTitle;
 
-    upsertMeta('name', 'description', desc)
-    upsertMeta('name', 'keywords', keywords)
-    upsertMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow')
+    upsertMeta("name", "description", desc);
+    upsertMeta("name", "keywords", keywords);
+    // Robots sudah dikirim server (nginx) di HTML awal; klien hanya boleh menambah noindex.
+    if (noindex) upsertMeta("name", "robots", "noindex, nofollow");
 
-    upsertCanonical(canonicalUrl)
+    upsertCanonical(canonicalUrl);
 
-    upsertMeta('property', 'og:title', fullTitle)
-    upsertMeta('property', 'og:description', desc)
-    upsertMeta('property', 'og:type', 'website')
-    upsertMeta('property', 'og:url', canonicalUrl)
-    upsertMeta('property', 'og:site_name', seo.siteName)
-    upsertMeta('property', 'og:locale', seo.locale)
-    upsertMeta('property', 'og:image', ogImage)
+    upsertMeta("property", "og:title", fullTitle);
+    upsertMeta("property", "og:description", desc);
+    upsertMeta("property", "og:type", "website");
+    upsertMeta("property", "og:url", canonicalUrl);
+    upsertMeta("property", "og:site_name", seo.siteName);
+    upsertMeta("property", "og:locale", seo.locale);
+    upsertMeta("property", "og:image", ogImage);
 
-    upsertMeta('name', 'twitter:card', 'summary')
-    upsertMeta('name', 'twitter:title', fullTitle)
-    upsertMeta('name', 'twitter:description', desc)
+    upsertMeta("name", "twitter:card", "summary");
+    upsertMeta("name", "twitter:title", fullTitle);
+    upsertMeta("name", "twitter:description", desc);
 
     if (jsonLd) {
-      const script = document.createElement('script')
-      script.type = 'application/ld+json'
-      script.dataset.seoJsonLd = 'true'
-      script.textContent = JSON.stringify(jsonLd)
-      document.head.appendChild(script)
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.dataset.seoJsonLd = "true";
+      script.textContent = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
     }
 
     return () => {
       document.head
-        .querySelectorAll('script[data-seo-json-ld]')
-        .forEach((el) => el.remove())
-    }
+        .querySelectorAll("script[data-seo-json-ld]")
+        .forEach((el) => el.remove());
+    };
   }, [title, description, keywords, path, jsonLd, noindex, seo])
 }
