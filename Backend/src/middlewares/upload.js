@@ -85,10 +85,14 @@ const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'
 
 const IMAGE_MAX_MB = 2;
 const MEDIA_MAX_MB = 10;
-const DOCUMENT_MAX_MB = 10;
+// Batas unggah dokumen langsung. Sonar S5693 menandai limit > 8.000.000 byte
+// sebagai hotspot DoS. Dokumen besar tetap bisa diunggah lewat POST
+// /api/chunk-upload, jadi batas ini hanya untuk file yang diunggah langsung.
+const DOCUMENT_MAX_BYTES = 8_000_000; // 8 MB desimal (≈ 7,6 MiB)
 
-function limitError(err, maxMb) {
+function limitError(err, maxBytes) {
   if (err?.name === "MulterError" && err.code === "LIMIT_FILE_SIZE") {
+    const maxMb = Math.ceil(maxBytes / (1024 * 1024));
     const message = `Ukuran file terlalu besar (maksimal ${maxMb}MB).`;
     return new AppError(message, 422, { filename: [message] });
   }
@@ -100,7 +104,7 @@ function limitError(err, maxMb) {
 function failOrNext(err, files, req, res, next) {
   if (err) {
     unlinkUploaded(files);
-    return next(limitError(err, IMAGE_MAX_MB));
+    return next(limitError(err, IMAGE_MAX_MB * 1024 * 1024));
   }
   const error = validateContent(collectUploadedFiles(req), validateImageData);
   if (error) {
@@ -167,7 +171,7 @@ function uploadFields(fields) {
       const files = collectUploadedFiles(req);
       if (err) {
         unlinkUploaded(files);
-        return next(limitError(err, MEDIA_MAX_MB));
+        return next(limitError(err, MEDIA_MAX_MB * 1024 * 1024));
       }
       const error = validateContent(files, validateMediaData);
       if (error) {
@@ -193,8 +197,8 @@ function uploadDocument(fields) {
   return (req, res, next) =>
     multer({
       storage,
-      // Tanpa batas ukuran, request satu file besar bisa memenuhi disk.
-      limits: { fileSize: DOCUMENT_MAX_MB * 1024 * 1024 },
+      // Batas aman di bawah ambang hotspot S5693 (8.000.000 byte).
+      limits: { fileSize: DOCUMENT_MAX_BYTES },
       fileFilter(req, file, cb) {
         const isImage = file.mimetype.startsWith("image/");
         if (isImage || DOCUMENT_MIMES.includes(file.mimetype)) {
@@ -212,7 +216,7 @@ function uploadDocument(fields) {
       const files = collectUploadedFiles(req);
       if (err) {
         unlinkUploaded(files);
-        return next(limitError(err, DOCUMENT_MAX_MB));
+        return next(limitError(err, DOCUMENT_MAX_BYTES));
       }
       const error = validateContent(files, validateDocumentData);
       if (error) {
