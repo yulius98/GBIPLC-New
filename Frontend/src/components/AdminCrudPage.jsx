@@ -1,12 +1,71 @@
 import { useEffect, useState } from 'react'
 import api, { MEDIA_URL } from '../api/client'
 import { toWebp } from '../utils/image'
+import { uploadFileInChunks } from '../utils/chunkUpload'
 import Pagination from './Pagination'
 
 function toDateInput(value) {
   if (!value) return ''
   const s = String(value)
   return s.slice(0, 10)
+}
+
+// Render input sesuai tipe field. Dipisah dari AdminCrudPage agar tidak ada
+// rantai ternary bersarang di JSX (S3358).
+function FieldInput({ field, value, options, editing, onChange, onFileChange, onToggle }) {
+  if (field.type === 'textarea') {
+    return (
+      <textarea
+        name={field.name}
+        value={value || ''}
+        onChange={onChange}
+        placeholder={field.placeholder}
+        rows={field.rows || 3}
+        style={field.minHeight ? { minHeight: field.minHeight } : undefined}
+        required={field.required}
+      />
+    )
+  }
+  if (field.type === 'select') {
+    return (
+      <select name={field.name} value={value || ''} onChange={onChange} required={field.required}>
+        <option value="">{field.placeholder || 'Pilih…'}</option>
+        {(options[field.name] || field.options || []).map((opt) => {
+          const optValue = typeof opt === 'object' ? opt.value : opt
+          const optLabel = typeof opt === 'object' ? opt.label : opt
+          return (
+            <option key={optValue} value={optValue}>
+              {optLabel}
+            </option>
+          )
+        })}
+      </select>
+    )
+  }
+  if (field.type === 'file') {
+    return (
+      <>
+        <input type="file" name={field.name} accept={field.accept} onChange={onFileChange} />
+        {editing?.[field.oldFileKey || field.name] && (
+          <small className="muted">File lama: {editing[field.oldFileKey || field.name]}</small>
+        )}
+      </>
+    )
+  }
+  if (field.type === 'checkbox') {
+    return <input type="checkbox" name={field.name} checked={Boolean(value)} onChange={onToggle} />
+  }
+  return (
+    <input
+      type={field.type || 'text'}
+      name={field.name}
+      value={value || ''}
+      onChange={onChange}
+      placeholder={field.placeholder}
+      min={field.min}
+      required={field.required}
+    />
+  )
 }
 
 export default function AdminCrudPage({
@@ -33,6 +92,8 @@ export default function AdminCrudPage({
   const [form, setForm] = useState(initialForm)
   const [fieldErrors, setFieldErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  // Progres upload bertahap (0..1); null = tidak sedang mengunggah file besar.
+  const [uploadProgress, setUploadProgress] = useState(null)
 
   async function load() {
     setLoading(true)
@@ -99,6 +160,34 @@ export default function AdminCrudPage({
     setForm((f) => ({ ...f, [name]: checked }))
   }
 
+  // Siapkan nilai untuk satu field file: unggah bertahap untuk dokumen besar,
+  // konversi WebP untuk gambar, atau kirim berkas apa adanya.
+  async function prepareFileValue(field, value) {
+    const isImage = (value.type || '').startsWith('image/')
+    if (field.chunked && !isImage) {
+      // Dokumen besar (PDF/PPT): unggah bertahap, lalu kirim hanya path
+      // hasilnya sebagai teks. Gambar tetap lewat upload biasa di bawah.
+      try {
+        const uploaded = await uploadFileInChunks(value, {
+          onProgress: setUploadProgress,
+        })
+        return uploaded.filename
+      } catch (uploadErr) {
+        uploadErr.fieldName = field.name
+        throw uploadErr
+      }
+    }
+    if (field.webp && isImage) {
+      // Konversi hanya untuk gambar; video diunggah apa adanya
+      const blob = await toWebp(value, field.maxSizeKB || 250)
+      if (blob) {
+        const baseName = String(value.name || 'gambar').replace(/\.[^.]+$/, '')
+        return new File([blob], `${baseName}.webp`, { type: 'image/webp' })
+      }
+    }
+    return value
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setNotice('')
@@ -126,23 +215,21 @@ export default function AdminCrudPage({
       let payload
       if (hasFile) {
         payload = new FormData()
+        // Proses semua field file di luar loop agar tidak ada `await` di dalam
+        // loop (S9382). Urutan append FormData tidak memengaruhi multer.
+        const preparedFiles = new Map()
+        await Promise.all(
+          fields
+            .filter((f) => f.type === 'file' && form[f.name] instanceof File)
+            .map(async (field) => {
+              preparedFiles.set(field.name, await prepareFileValue(field, form[field.name]))
+            }),
+        )
         for (const field of fields) {
           const value = form[field.name]
           if (field.type === 'file') {
-            if (value instanceof File) {
-              const isImage = (value.type || '').startsWith('image/')
-              if (field.webp && isImage) {
-                // Konversi hanya untuk gambar; video diunggah apa adanya
-                const blob = await toWebp(value, field.maxSizeKB || 250)
-                if (blob) {
-                  const baseName = String(value.name || 'gambar').replace(/\.[^.]+$/, '')
-                  payload.append(field.name, new File([blob], `${baseName}.webp`, { type: 'image/webp' }))
-                } else {
-                  payload.append(field.name, value)
-                }
-              } else {
-                payload.append(field.name, value)
-              }
+            if (preparedFiles.has(field.name)) {
+              payload.append(field.name, preparedFiles.get(field.name))
             }
           } else if (field.type === 'checkbox') {
             // Kirim eksplisit agar backend bisa membedakan true/false
@@ -175,9 +262,15 @@ export default function AdminCrudPage({
     } catch (err) {
       const data = err.response?.data
       if (data?.errors) setFieldErrors(data.errors)
-      else setError(data?.message || 'Gagal menyimpan data.')
+      else if (err.fieldName) {
+        // Gagal saat upload bertahap: tampilkan di bawah field file di dalam modal.
+        setFieldErrors({
+          [err.fieldName]: [data?.message || err.message || 'Gagal mengunggah file.'],
+        })
+      } else setError(data?.message || 'Gagal menyimpan data.')
     } finally {
       setSubmitting(false)
+      setUploadProgress(null)
     }
   }
 
@@ -193,7 +286,13 @@ export default function AdminCrudPage({
     }
   }
 
-  const hasFileField = fields.some((f) => f.type === 'file')
+  let submitLabel = 'Simpan'
+  if (submitting) {
+    submitLabel =
+      uploadProgress !== null
+        ? `Mengunggah ${Math.round(uploadProgress * 100)}%…`
+        : 'Menyimpan…'
+  }
 
   return (
     <div className="admin-page">
@@ -313,66 +412,15 @@ export default function AdminCrudPage({
                       {field.label}
                       {field.required && ' *'}
                     </span>
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        name={field.name}
-                        value={form[field.name] || ''}
-                        onChange={handleChange}
-                        placeholder={field.placeholder}
-                        rows={field.rows || 3}
-                        style={field.minHeight ? { minHeight: field.minHeight } : undefined}
-                        required={field.required}
-                      />
-                    ) : field.type === 'select' ? (
-                      <select
-                        name={field.name}
-                        value={form[field.name] || ''}
-                        onChange={handleChange}
-                        required={field.required}
-                      >
-                        <option value="">{field.placeholder || 'Pilih…'}</option>
-                        {(options[field.name] || field.options || []).map((opt) => {
-                          const value = typeof opt === 'object' ? opt.value : opt
-                          const label = typeof opt === 'object' ? opt.label : opt
-                          return (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          )
-                        })}
-                      </select>
-                    ) : field.type === 'file' ? (
-                      <>
-                        <input
-                          type="file"
-                          name={field.name}
-                          accept={field.accept}
-                          onChange={handleFile}
-                        />
-                        {hasFileField && editing?.[field.oldFileKey || field.name] && (
-                          <small className="muted">
-                            File lama: {editing[field.oldFileKey || field.name]}
-                          </small>
-                        )}
-                      </>
-                    ) : field.type === 'checkbox' ? (
-                      <input
-                        type="checkbox"
-                        name={field.name}
-                        checked={Boolean(form[field.name])}
-                        onChange={handleToggle}
-                      />
-                    ) : (
-                      <input
-                        type={field.type || 'text'}
-                        name={field.name}
-                        value={form[field.name] || ''}
-                        onChange={handleChange}
-                        placeholder={field.placeholder}
-                        min={field.min}
-                        required={field.required}
-                      />
-                    )}
+                    <FieldInput
+                      field={field}
+                      value={form[field.name]}
+                      options={options}
+                      editing={editing}
+                      onChange={handleChange}
+                      onFileChange={handleFile}
+                      onToggle={handleToggle}
+                    />
                     {fieldErrors[field.name] && (
                       <small className="field__error">{fieldErrors[field.name][0]}</small>
                     )}
@@ -380,12 +428,21 @@ export default function AdminCrudPage({
                   </label>
                 ))}
 
+                {uploadProgress !== null && (
+                  <div>
+                    <progress value={uploadProgress} max={1} style={{ width: '100%' }} />
+                    <small className="muted">
+                      Mengunggah file… {Math.round(uploadProgress * 100)}% (jangan tutup halaman ini)
+                    </small>
+                  </div>
+                )}
+
                 <div className="admin-form__actions">
                   <button type="button" className="btn btn--ghost" onClick={close}>
                     Batal
                   </button>
                   <button type="submit" className="btn btn--primary" disabled={submitting}>
-                    {submitting ? 'Menyimpan…' : 'Simpan'}
+                    {submitLabel}
                   </button>
                 </div>
               </form>

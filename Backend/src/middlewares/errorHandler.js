@@ -10,9 +10,9 @@ function errorHandler(err, req, res, next) {
   // Error upload (multer): kembalikan pesan yang jelas, bukan 500 generik
   if (err.name === 'MulterError') {
     const message =
-      err.code === 'LIMIT_FILE_SIZE'
-        ? 'Ukuran file terlalu besar (maksimal 2MB).'
-        : 'Gagal mengunggah file.';
+      err.code === "LIMIT_FILE_SIZE"
+        ? "Ukuran file terlalu besar."
+        : "Gagal mengunggah file.";
     return apiResponse.error(res, {
       message,
       statusCode: 422,

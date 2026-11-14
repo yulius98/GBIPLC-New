@@ -83,10 +83,24 @@ const storage = multer.diskStorage({
 // sehingga file SVG yang diunggah publik berpotensi jadi celah stored XSS.
 const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
 
+const IMAGE_MAX_MB = 2;
+const MEDIA_MAX_MB = 10;
+const DOCUMENT_MAX_MB = 10;
+
+function limitError(err, maxMb) {
+  if (err?.name === "MulterError" && err.code === "LIMIT_FILE_SIZE") {
+    const message = `Ukuran file terlalu besar (maksimal ${maxMb}MB).`;
+    return new AppError(message, 422, { filename: [message] });
+  }
+  return err;
+}
+
+
+
 function failOrNext(err, files, req, res, next) {
   if (err) {
     unlinkUploaded(files);
-    return next(err);
+    return next(limitError(err, IMAGE_MAX_MB));
   }
   const error = validateContent(collectUploadedFiles(req), validateImageData);
   if (error) {
@@ -101,17 +115,16 @@ function failOrNext(err, files, req, res, next) {
 
 const multerImage = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  limits: { fileSize: IMAGE_MAX_MB * 1024 * 1024 },
   fileFilter(req, file, cb) {
     if (ALLOWED_IMAGE_MIMES.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(
-        new AppError(
-          'File yang diunggah harus berupa gambar.',
-          422,
-          { filename: 'File yang diunggah harus berupa gambar (jpeg, png, jpg, gif, atau webp).' }
-        )
+        new AppError("File yang diunggah harus berupa gambar.", 422, {
+          filename:
+            "File yang diunggah harus berupa gambar (jpeg, png, jpg, gif, atau webp).",
+        }),
       );
     }
   },
@@ -131,14 +144,14 @@ const uploadImage = (req, res, next) =>
 const multerMedia = () =>
   multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: MEDIA_MAX_MB * 1024 * 1024 },
     fileFilter(req, file, cb) {
-      const isImage = file.mimetype.startsWith('image/');
-      const isVideo = file.mimetype.startsWith('video/');
+      const isImage = file.mimetype.startsWith("image/");
+      const isVideo = file.mimetype.startsWith("video/");
       if (isImage || isVideo) {
         cb(null, true);
       } else {
-        cb(new AppError('File harus berupa gambar atau video.', 422));
+        cb(new AppError("File harus berupa gambar atau video.", 422));
       }
     },
   });
@@ -154,7 +167,7 @@ function uploadFields(fields) {
       const files = collectUploadedFiles(req);
       if (err) {
         unlinkUploaded(files);
-        return next(err);
+        return next(limitError(err, MEDIA_MAX_MB));
       }
       const error = validateContent(files, validateMediaData);
       if (error) {
@@ -181,14 +194,17 @@ function uploadDocument(fields) {
     multer({
       storage,
       // Tanpa batas ukuran, request satu file besar bisa memenuhi disk.
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      limits: { fileSize: DOCUMENT_MAX_MB * 1024 * 1024 },
       fileFilter(req, file, cb) {
         const isImage = file.mimetype.startsWith("image/");
         if (isImage || DOCUMENT_MIMES.includes(file.mimetype)) {
           cb(null, true);
         } else {
           cb(
-            new AppError("File harus berupa gambar, PDF, atau PowerPoint.", 422),
+            new AppError(
+              "File harus berupa gambar, PDF, atau PowerPoint.",
+              422,
+            ),
           );
         }
       },
@@ -196,7 +212,7 @@ function uploadDocument(fields) {
       const files = collectUploadedFiles(req);
       if (err) {
         unlinkUploaded(files);
-        return next(err);
+        return next(limitError(err, DOCUMENT_MAX_MB));
       }
       const error = validateContent(files, validateDocumentData);
       if (error) {
